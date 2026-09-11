@@ -132,6 +132,8 @@ const dom = {
     btnAiSearch: document.getElementById('btn-ai-search'),
     filterAll: document.getElementById('filter-all'),
     filterActive: document.getElementById('filter-active'),
+    filterStarred: document.getElementById('filter-starred'),
+    starredCount: document.getElementById('starred-count'),
     filterUnlocked: document.getElementById('filter-unlocked'),
     themeSelect: document.getElementById('theme-select'),
     btnPostJob: document.getElementById('btn-post-job'),
@@ -147,7 +149,18 @@ const dom = {
     activeJobDetailsDisplay: document.getElementById('active-job-details'),
     seekerMatchTitle: document.getElementById('seeker-match-title'),
     seekerMatchSalary: document.getElementById('seeker-match-salary'),
-    seekerMatchMeta: document.getElementById('seeker-match-meta')
+    seekerMatchMeta: document.getElementById('seeker-match-meta'),
+    btnRecordPitch: document.getElementById('btn-record-pitch'),
+    btnPlayMyPitch: document.getElementById('btn-play-my-pitch'),
+    seekerPitchCanvas: document.getElementById('seeker-pitch-canvas'),
+    seekerPitchStatus: document.getElementById('seeker-pitch-status'),
+    recordPitchText: document.getElementById('record-pitch-text'),
+    btnOpenShareModal: document.getElementById('btn-open-share-modal'),
+    sharePortfolioModal: document.getElementById('share-portfolio-modal'),
+    closeShareModal: document.getElementById('close-share-modal'),
+    btnCloseShareModalFooter: document.getElementById('btn-close-share-modal-footer'),
+    sharePortfolioUrl: document.getElementById('share-portfolio-url'),
+    btnCopyShareUrl: document.getElementById('btn-copy-share-url')
 };
 
 // --- INIT APP ---
@@ -171,6 +184,8 @@ window.addEventListener('DOMContentLoaded', () => {
     initJobSeekerControls();
     initFilters();
     initJobModal();
+    initElevatorPitchRecorder();
+    initSharePortfolioModal();
     
     // Set initial view (defaults to landing page)
     const initialView = localStorage.getItem('biospark_last_view') || 'landing';
@@ -313,6 +328,7 @@ function initJobModal() {
 function initFilters() {
     dom.filterAll.addEventListener('click', () => setFilter('all'));
     dom.filterActive.addEventListener('click', () => setFilter('active'));
+    if (dom.filterStarred) dom.filterStarred.addEventListener('click', () => setFilter('starred'));
     dom.filterUnlocked.addEventListener('click', () => setFilter('unlocked'));
 
     // Natural Language Search / Emergency Hire Search
@@ -322,14 +338,16 @@ function initFilters() {
     });
 }
 
-let activeFilter = 'all'; // 'all' | 'active' | 'unlocked'
+let activeFilter = 'all'; // 'all' | 'active' | 'starred' | 'unlocked'
 function setFilter(type) {
     activeFilter = type;
-    [dom.filterAll, dom.filterActive, dom.filterUnlocked].forEach(el => el.classList.remove('active'));
+    const filterBtns = [dom.filterAll, dom.filterActive, dom.filterStarred, dom.filterUnlocked].filter(Boolean);
+    filterBtns.forEach(el => el.classList.remove('active'));
     
-    if (type === 'all') dom.filterAll.classList.add('active');
-    if (type === 'active') dom.filterActive.classList.add('active');
-    if (type === 'unlocked') dom.filterUnlocked.classList.add('active');
+    if (type === 'all' && dom.filterAll) dom.filterAll.classList.add('active');
+    if (type === 'active' && dom.filterActive) dom.filterActive.classList.add('active');
+    if (type === 'starred' && dom.filterStarred) dom.filterStarred.classList.add('active');
+    if (type === 'unlocked' && dom.filterUnlocked) dom.filterUnlocked.classList.add('active');
 
     renderCandidates();
 }
@@ -401,11 +419,14 @@ function renderCandidates(customList = null) {
     
     // Apply filters
     if (activeFilter === 'active') {
-        // Filter: Status is available and updated within last 24h (mock simulation: all available ones are active)
         list = list.filter(c => c.status === 'available');
+    } else if (activeFilter === 'starred') {
+        list = list.filter(c => c.starred);
     } else if (activeFilter === 'unlocked') {
         list = list.filter(c => c.unlocked);
     }
+
+    updateStarredCount();
 
     dom.candidatesContainer.innerHTML = '';
     
@@ -428,15 +449,76 @@ function renderCandidates(customList = null) {
         item.innerHTML = `
             <div class="candidate-info-row">
                 <span class="candidate-name">${c.name}</span>
-                ${statusBadge}
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="btn-star-candidate ${c.starred ? 'active' : ''}" onclick="toggleStarCandidate('${c.id}', event)" title="${c.starred ? 'Remove from shortlist' : 'Star / Shortlist candidate'}">
+                        <i class="fa-${c.starred ? 'solid' : 'regular'} fa-star"></i>
+                    </button>
+                    ${statusBadge}
+                </div>
             </div>
             <div class="candidate-desc">${c.title}</div>
-            <div class="candidate-desc" style="font-size: 0.7rem; opacity: 0.7;"><i class="fa-solid fa-location-dot"></i> ${c.location.split('(')[0]}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div class="candidate-desc" style="font-size: 0.7rem; opacity: 0.7;"><i class="fa-solid fa-location-dot"></i> ${c.location.split('(')[0]}</div>
+                <button class="btn-card-pitch" onclick="playCandidatePitch('${c.id}', event)" title="Listen to 30s elevator pitch">
+                    <i class="fa-solid fa-play"></i> Pitch
+                </button>
+            </div>
         `;
 
         item.addEventListener('click', () => selectCandidate(c.id));
         dom.candidatesContainer.appendChild(item);
     });
+}
+
+// --- STARRED / SHORTLIST LOGIC ---
+function toggleStarCandidate(id, event) {
+    if (event) event.stopPropagation();
+    const candidate = state.candidates.find(c => c.id === id);
+    if (!candidate) return;
+    
+    candidate.starred = !candidate.starred;
+    updateStarredCount();
+    renderCandidates();
+
+    if (candidate.starred) {
+        addAiMessage(`⭐ Added **${candidate.name}** to your shortlisted candidates.`);
+    }
+}
+
+function updateStarredCount() {
+    const count = state.candidates.filter(c => c.starred).length;
+    if (dom.starredCount) dom.starredCount.textContent = count;
+}
+
+// --- CANDIDATE AUDIO PITCH PLAYBACK ---
+let currentPitchAudio = null;
+function playCandidatePitch(id, event) {
+    if (event) event.stopPropagation();
+    const candidate = state.candidates.find(c => c.id === id);
+    if (!candidate) return;
+
+    if (currentPitchAudio) {
+        currentPitchAudio.pause();
+        currentPitchAudio = null;
+    }
+
+    // Visual feedback
+    if (event && event.currentTarget) {
+        const btn = event.currentTarget;
+        btn.classList.add('playing');
+        setTimeout(() => btn.classList.remove('playing'), 4000);
+    }
+
+    addAiMessage(`🎙️ Playing 30s elevator pitch for **${candidate.name}**...`);
+    
+    // Play spoken pitch
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(candidate.pitch || `Hi, I am ${candidate.name}, ${candidate.title}. I am excited about new opportunities!`);
+        utterance.rate = 1.05;
+        utterance.pitch = candidate.name.includes('Sarah') || candidate.name.includes('Zena') ? 1.2 : 0.95;
+        window.speechSynthesis.speak(utterance);
+    }
 }
 
 // --- SELECT CANDIDATE ---
@@ -1284,3 +1366,158 @@ function switchMobileTab(tabIndex) {
     });
 }
 window.switchMobileTab = switchMobileTab; // Expose globally for HTML onclick
+
+// --- ELEVATOR PITCH RECORDER (CANDIDATE PORTAL) ---
+let pitchMediaRecorder = null;
+let pitchAudioChunks = [];
+let pitchAudioBlob = null;
+let isPitchRecording = false;
+let pitchAnimationId = null;
+
+function initElevatorPitchRecorder() {
+    if (!dom.btnRecordPitch) return;
+
+    dom.btnRecordPitch.addEventListener('click', async () => {
+        if (!isPitchRecording) {
+            // Start Recording
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                pitchMediaRecorder = new MediaRecorder(stream);
+                pitchAudioChunks = [];
+
+                pitchMediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) pitchAudioChunks.push(e.data);
+                };
+
+                pitchMediaRecorder.onstop = () => {
+                    pitchAudioBlob = new Blob(pitchAudioChunks, { type: 'audio/webm' });
+                    state.seekerPitchAudioBlob = pitchAudioBlob;
+                    
+                    if (dom.seekerPitchStatus) {
+                        dom.seekerPitchStatus.textContent = '🟢 Recorded (0:28)';
+                        dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
+                        dom.seekerPitchStatus.style.color = '#3fb950';
+                    }
+                    if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'inline-flex';
+                    if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record';
+                    stream.getTracks().forEach(track => track.stop());
+                    stopPitchWaveAnimation();
+                };
+
+                pitchMediaRecorder.start();
+                isPitchRecording = true;
+                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Stop Recording';
+                if (dom.btnRecordPitch) dom.btnRecordPitch.classList.add('recording-pulse');
+                startPitchWaveAnimation();
+            } catch (err) {
+                console.warn('Microphone permission or error:', err);
+                // Fallback simulation
+                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Recording (sim)...';
+                startPitchWaveAnimation();
+                setTimeout(() => {
+                    stopPitchWaveAnimation();
+                    if (dom.seekerPitchStatus) {
+                        dom.seekerPitchStatus.textContent = '🟢 Recorded (0:30)';
+                        dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
+                        dom.seekerPitchStatus.style.color = '#3fb950';
+                    }
+                    if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'inline-flex';
+                    if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record';
+                }, 2500);
+            }
+        } else {
+            // Stop Recording
+            if (pitchMediaRecorder && pitchMediaRecorder.state !== 'inactive') {
+                pitchMediaRecorder.stop();
+            }
+            isPitchRecording = false;
+            if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');
+        }
+    });
+
+    if (dom.btnPlayMyPitch) {
+        dom.btnPlayMyPitch.addEventListener('click', () => {
+            if (pitchAudioBlob) {
+                const audio = new Audio(URL.createObjectURL(pitchAudioBlob));
+                audio.play();
+            } else {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Zena Nasereddin, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
+                    u.rate = 1.05;
+                    window.speechSynthesis.speak(u);
+                }
+            }
+        });
+    }
+}
+
+function startPitchWaveAnimation() {
+    const canvas = dom.seekerPitchCanvas;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let phase = 0;
+
+    function renderWave() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#c084fc';
+        ctx.beginPath();
+        const sliceWidth = canvas.width / 40;
+        let x = 0;
+
+        for (let i = 0; i < 40; i++) {
+            const v = Math.sin(i * 0.4 + phase) * 8 + Math.random() * 4;
+            const y = canvas.height / 2 + v;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+            x += sliceWidth;
+        }
+        ctx.stroke();
+        phase += 0.2;
+        pitchAnimationId = requestAnimationFrame(renderWave);
+    }
+    renderWave();
+}
+
+function stopPitchWaveAnimation() {
+    if (pitchAnimationId) cancelAnimationFrame(pitchAnimationId);
+    const canvas = dom.seekerPitchCanvas;
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+// --- SHARE PUBLIC PORTFOLIO MODAL ---
+function initSharePortfolioModal() {
+    if (!dom.btnOpenShareModal) return;
+
+    dom.btnOpenShareModal.addEventListener('click', () => {
+        if (dom.sharePortfolioModal) dom.sharePortfolioModal.classList.add('open');
+    });
+
+    const closeMod = () => {
+        if (dom.sharePortfolioModal) dom.sharePortfolioModal.classList.remove('open');
+    };
+
+    if (dom.closeShareModal) dom.closeShareModal.addEventListener('click', closeMod);
+    if (dom.btnCloseShareModalFooter) dom.btnCloseShareModalFooter.addEventListener('click', closeMod);
+
+    if (dom.btnCopyShareUrl) {
+        dom.btnCopyShareUrl.addEventListener('click', () => {
+            const urlInput = dom.sharePortfolioUrl;
+            if (urlInput) {
+                navigator.clipboard.writeText(urlInput.value).then(() => {
+                    const originalHtml = dom.btnCopyShareUrl.innerHTML;
+                    dom.btnCopyShareUrl.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                    dom.btnCopyShareUrl.style.background = 'rgba(46, 160, 67, 0.8)';
+                    setTimeout(() => {
+                        dom.btnCopyShareUrl.innerHTML = originalHtml;
+                        dom.btnCopyShareUrl.style.background = '';
+                    }, 2000);
+                });
+            }
+        });
+    }
+}

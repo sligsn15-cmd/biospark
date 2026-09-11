@@ -332,6 +332,7 @@
                 <div class="pool-filters">
                     <button class="filter-chip active" id="filter-all">All</button>
                     <button class="filter-chip" id="filter-active"><span class="pulse-green"></span> Active (Last 20)</button>
+                    <button class="filter-chip" id="filter-starred"><i class="fa-solid fa-star" style="color: #f59e0b; margin-right: 4px;"></i> Starred (<span id="starred-count">0</span>)</button>
                     <button class="filter-chip" id="filter-unlocked">Unlocked</button>
                 </div>
 
@@ -498,6 +499,35 @@
                     </p>
                 </div>
 
+                <!-- 30-Second Elevator Voice Pitch Card -->
+                <div class="status-retention-card" style="border-color: rgba(168, 85, 247, 0.4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="margin-bottom: 0;"><i class="fa-solid fa-microphone-lines text-purple"></i> 30s Elevator Pitch</h3>
+                        <span class="badge" id="seeker-pitch-status" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px;">Not Recorded</span>
+                    </div>
+                    <p class="status-description">Record a quick 30s audio intro. Recruiters listen to this before reviewing your CV!</p>
+                    
+                    <div class="voice-verification-panel" style="margin-top: 10px; background: rgba(13, 17, 28, 0.6); padding: 12px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.2);">
+                        <canvas id="seeker-pitch-canvas" width="220" height="36" style="width: 100%; height: 36px; background: rgba(0,0,0,0.4); border-radius: 6px; margin-bottom: 8px; display: block;"></canvas>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" id="btn-record-pitch" style="flex: 1; justify-content: center; font-size: 0.78rem;">
+                                <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record Pitch</span>
+                            </button>
+                            <button class="btn btn-primary" id="btn-play-my-pitch" style="display: none; justify-content: center; font-size: 0.78rem;">
+                                <i class="fa-solid fa-play"></i> Listen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Public Portfolio Button -->
+                <div style="margin-bottom: 16px;">
+                    <button class="btn btn-glow btn-primary" id="btn-open-share-modal" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700;">
+                        <i class="fa-solid fa-share-nodes"></i> Share Public Portfolio
+                    </button>
+                </div>
+
                 <!-- Interactive Resume Upload Form -->
                 <div class="profile-upload-section">
                     <h3>Update Profile PDF</h3>
@@ -656,6 +686,93 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="btn-cancel-job">Cancel</button>
                 <button class="btn btn-primary" id="btn-save-job">Post Job Position</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Public Portfolio Modal -->
+    <div class="modal" id="share-portfolio-modal">
+        <div class="modal-content" style="max-width: 540px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-share-nodes text-cyan"></i> Share Public Portfolio</h3>
+                <button class="close-modal" id="close-share-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="status-description" style="margin-bottom: 14px;">
+                    Anyone with this link can view your verified active status, listen to your 30s voice pitch, and browse your experience. Your direct phone/email are kept private until verified.
+                </p>
+
+                <!-- Link Copy Box -->
+                <div class="form-group">
+                    <label>Your Live Public URL</label>
+                    <div style="display: flex; gap: 8px; margin-top: 4px;">
+                        <input type="text" id="share-portfolio-url" readonly value="https://biospark.co/cv/zena-nasereddin" style="font-family: monospace; font-size: 0.85rem; color: var(--accent-cyan);">
+                        <button class="btn btn-primary" id="btn-copy-share-url" style="white-space: nowrap;">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Public Card Preview -->
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; display: block;">Live Public Card Preview</label>
+                    <div style="background: rgba(13, 17, 28, 0.9); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--gradient-glow); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; color: #fff;" id="share-preview-avatar">
+                                    ZN
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.05rem;" id="share-preview-name">Zena Nasereddin</h4>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);" id="share-preview-role">Senior Full-Stack Engineer</p>
+                                </div>
+                            </div>
+                            <span class="badge badge-active" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px;">
+                                <span class="pulse-green"></span> Verified Active
+                            </span>
+                        </div>
+
+                        <!-- Mini Voice Pitch Player -->
+                        <div style="background: rgba(22, 28, 45, 0.8); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-microphone-lines text-purple"></i>
+                                <span style="font-size: 0.8rem; font-weight: 600;">30-Second Elevator Pitch</span>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="alert('Playing candidate voice pitch preview...')">
+                                <i class="fa-solid fa-play"></i> Play (0:28)
+                            </button>
+                        </div>
+
+                        <!-- Skills preview -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;">
+                            <span style="background: rgba(56, 139, 253, 0.15); color: #388bfd; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600;">Node.js</span>
+                            <span style="background: rgba(56, 139, 253, 0.15); color: #388bfd; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600;">AWS</span>
+                            <span style="background: rgba(56, 139, 253, 0.15); color: #388bfd; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600;">React</span>
+                            <span style="background: rgba(56, 139, 253, 0.15); color: #388bfd; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600;">PostgreSQL</span>
+                        </div>
+
+                        <!-- Contact Privacy Guarantee -->
+                        <div style="text-align: center; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.72rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-lock text-cyan"></i> Direct phone & email unlocked exclusively for verified hiring teams.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Share Links -->
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 0.8rem;" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https://biospark.co', '_blank')">
+                        <i class="fa-brands fa-linkedin" style="color: #0a66c2;"></i> LinkedIn
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 0.8rem;" onclick="window.open('https://api.whatsapp.com/send?text=Check%20out%20my%20BioSpark%20profile%3A%20https%3A%2F%2Fbiospark.co', '_blank')">
+                        <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> WhatsApp
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 0.8rem;" onclick="window.open('https://twitter.com/intent/tweet?text=Check%20out%20my%20interactive%20resume%20on%20BioSpark!%20https%3A%2F%2Fbiospark.co', '_blank')">
+                        <i class="fa-brands fa-x-twitter"></i> X / Twitter
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-close-share-modal-footer">Close</button>
             </div>
         </div>
     </div>

@@ -599,6 +599,52 @@ h1, h2, h3, h4, h5, h6 {
     white-space: nowrap;
 }
 
+.btn-star-candidate {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: var(--transition-smooth);
+}
+
+.btn-star-candidate:hover,
+.btn-star-candidate.active {
+    color: #f59e0b;
+    transform: scale(1.15);
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+.btn-card-pitch {
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: #c084fc;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition-smooth);
+}
+
+.btn-card-pitch:hover {
+    background: rgba(168, 85, 247, 0.3);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+}
+
+.btn-card-pitch.playing {
+    background: var(--accent-purple);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+    animation: pulse 1s infinite alternate;
+}
+
 /* ==========================================
    MIDDLE PANEL: PDF resume previewer
    ========================================== */
