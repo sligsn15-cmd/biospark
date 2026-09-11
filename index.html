@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioSpark - AI Interactive Recruitment & Active Talent Hub</title>
+    <!-- Google Fonts: Outfit for Headers, Inter for Body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF.js for Client-Side PDF Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="logo-area">
+            <div class="logo-icon" style="background: none; overflow: hidden; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
+                <img src="assets/logo2.jpg" alt="BioSpark Logo" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <span class="logo-text">BioSpark</span>
+        </div>
+        
+        <!-- View Toggle Controls (Easy-to-use UX) -->
+        <div class="view-toggles">
+            <button class="view-btn" id="view-landing" onclick="switchView('landing')">
+                <i class="fa-solid fa-house"></i> Home
+            </button>
+            <button class="view-btn active" id="view-recruiter" onclick="switchView('recruiter')">
+                <i class="fa-solid fa-briefcase"></i> Recruiter Workspace
+            </button>
+            <button class="view-btn" id="view-jobseeker" onclick="switchView('jobseeker')">
+                <i class="fa-solid fa-user-tie"></i> Job-Seeker Portal
+            </button>
+        </div>
+
+        <div class="nav-actions">
+            <button class="btn btn-icon" id="btn-settings" title="Settings / API Key">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <button class="btn btn-primary" id="btn-upgrade" onclick="switchView('landing'); document.getElementById('pricing-section').scrollIntoView({behavior: 'smooth'});">
+                <i class="fa-solid fa-crown"></i> Get Pro
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="app-container">
+
+        <!-- 0. PUBLIC LANDING PAGE VIEW -->
+        <div class="landing-page-container scrollable" id="landing-workspace" style="display: none;">
+            
+            <!-- Hero Section -->
+            <section class="landing-hero">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-bolt-lightning text-cyan"></i>
+                    <span>Next-Gen Interactive Hiring Platform</span>
+                </div>
+                <h1 class="hero-title">
+                    Skip the Screening Call.<br>
+                    <span class="gradient-text">Verify the Vibe.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    The interactive hiring platform where candidate CVs talk, availability is verified in real-time, and recruiters sift 100+ talent profiles in seconds with AI Co-Pilot & authentic voice notes.
+                </p>
+                <div class="hero-cta-group">
+                    <button class="btn btn-primary btn-glow btn-lg" onclick="switchView('recruiter')">
+                        <i class="fa-solid fa-briefcase"></i> Launch Recruiter Workspace
+                    </button>
+                    <button class="btn btn-secondary btn-lg" onclick="switchView('jobseeker')">
+                        <i class="fa-solid fa-wand-magic-sparkles text-cyan"></i> Optimize CV Free
+                    </button>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="hero-stats-row">
+                    <div class="hero-stat-pill">
+                        <i class="fa-solid fa-shield-halved text-cyan"></i>
+                        <span>100% Client-Side Private</span>
+                    </div>
+                    <div class="hero-stat-pill">
+                        <i class="fa-solid fa-microphone text-purple"></i>
+                        <span>Real Microphone Voice Notes</span>
+                    </div>
+                    <div class="hero-stat-pill">
+                        <i class="fa-solid fa-circle-check text-green"></i>
+                        <span>Zero Ghosted Candidates</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Pillars Section -->
+            <section class="landing-section">
+                <div class="section-header-center">
+                    <span class="section-tag">Core Features</span>
+                    <h2>Built to Solve What Traditional Job Boards Break</h2>
+                    <p>No more black-hole job applications or 15-minute introductory screening calls with candidates who already accepted another offer.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-box bg-purple-glow">
+                            <i class="fa-solid fa-microphone-lines"></i>
+                        </div>
+                        <h3>Asynchronous Voice Screening</h3>
+                        <p>Recruiters record quick 30-second audio inquiries directly from the candidate's CV. Candidates reply in their authentic voice to assess communication, tone, and confidence instantly.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-box bg-green-glow">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <h3>Self-Cleaning Active Pool</h3>
+                        <p>Job seekers tap <code>🟢 Still Available</code> to maintain their ranking. Profiles without activity naturally decay, ensuring recruiters never waste time calling stale applicants.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-box bg-cyan-glow">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3>AI ATS CV Optimizer & Sifter</h3>
+                        <p>Job seekers get instant ATS keyword rewriting and crisp vector PDF exports. Recruiters sift through bulk resume uploads using natural language prompts.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-box bg-blue-glow">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <h3>$5 Pay-As-You-Go Unlocks</h3>
+                        <p>Zero high-cost subscriptions. Browse full resumes and listen to voice pitch replies freely. Pay only $5 when you're 100% ready to unlock direct contact details and schedule.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How It Works Flow -->
+            <section class="landing-section bg-card-layer">
+                <div class="section-header-center">
+                    <span class="section-tag">Workflow</span>
+                    <h2>How BioSpark Works for Both Sides</h2>
+                </div>
+
+                <div class="how-it-works-grid">
+                    <!-- Recruiter Flow -->
+                    <div class="workflow-column">
+                        <div class="workflow-badge"><i class="fa-solid fa-briefcase"></i> For Recruiters</div>
+                        <div class="workflow-steps">
+                            <div class="step-item">
+                                <div class="step-num">1</div>
+                                <div class="step-desc">
+                                    <h4>Drop 50–100 Resumes</h4>
+                                    <p>Upload a folder of PDFs. Parsed 100% locally in your browser.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">2</div>
+                                <div class="step-desc">
+                                    <h4>Ask AI Co-Pilot</h4>
+                                    <p>Filter candidates with queries like <i>"Find AWS engineers with 5+ yrs experience"</i>.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">3</div>
+                                <div class="step-desc">
+                                    <h4>Send Voice Check</h4>
+                                    <p>Record a 30s voice question to verify spoken English and communication.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">4</div>
+                                <div class="step-desc">
+                                    <h4>Unlock & Interview</h4>
+                                    <p>Unlock phone/email for $5 and book the interview.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Seeker Flow -->
+                    <div class="workflow-column">
+                        <div class="workflow-badge"><i class="fa-solid fa-user-tie"></i> For Job Seekers</div>
+                        <div class="workflow-steps">
+                            <div class="step-item">
+                                <div class="step-num">1</div>
+                                <div class="step-desc">
+                                    <h4>Upload Your CV</h4>
+                                    <p>Drop your existing PDF resume. It auto-parses your experience.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">2</div>
+                                <div class="step-desc">
+                                    <h4>1-Click AI Optimization</h4>
+                                    <p>Let AI rewrite your experience into high-impact bullet points and export to PDF/TXT.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">3</div>
+                                <div class="step-desc">
+                                    <h4>Bump Availability</h4>
+                                    <p>Tap <code>🟢 Still Available</code> to stay at the top of recruiter searches.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">4</div>
+                                <div class="step-desc">
+                                    <h4>Reply with Real Voice</h4>
+                                    <p>Receive recruiter inquiries and record authentic voice answers.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Grid -->
+            <section class="landing-section" id="pricing-section">
+                <div class="section-header-center">
+                    <span class="section-tag">Pricing</span>
+                    <h2>Simple, High-Margin, Transparent Pricing</h2>
+                    <p>Free forever for candidates. Pay only for verified results as a recruiter.</p>
+                </div>
+
+                <div class="pricing-cards-grid">
+                    <!-- Job Seeker Card -->
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <span class="pricing-badge">Job Seekers</span>
+                            <h3>Candidate Pass</h3>
+                            <div class="price-val">$0 <span>/ forever</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fa-solid fa-check text-cyan"></i> AI ATS CV Optimizer & Rewriter</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> High-Resolution Vector PDF Export</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> 1-Click Availability Bumping</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Voice Inquiry Inbox & Microphone Replies</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Privacy Protected Contact Guard</li>
+                        </ul>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="switchView('jobseeker')">Start Optimizing Free</button>
+                    </div>
+
+                    <!-- Pay As You Go Recruiter Card (Highlighted) -->
+                    <div class="pricing-card featured-pricing-card">
+                        <div class="popular-ribbon">Most Popular</div>
+                        <div class="pricing-header">
+                            <span class="pricing-badge">Hiring Teams</span>
+                            <h3>Pay-As-You-Go</h3>
+                            <div class="price-val">$5 <span>/ candidate unlock</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fa-solid fa-check text-cyan"></i> Full AI Resume Sifting & Search</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Bulk Resume PDF Ingestion (50+ CVs)</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Asynchronous Voice Inquiry Recording</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Instant Email, Phone & LinkedIn Reveal</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Zero monthly commitments or lock-ins</li>
+                        </ul>
+                        <button class="btn btn-primary btn-glow" style="width: 100%;" onclick="switchView('recruiter')">Launch Workspace</button>
+                    </div>
+
+                    <!-- Agency Pro Card -->
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <span class="pricing-badge">Agencies</span>
+                            <h3>Agency Pro</h3>
+                            <div class="price-val">$49 <span>/ month</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fa-solid fa-check text-cyan"></i> Unlimited Candidate Contact Unlocks</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Multi-Role Job Postings & Match Feeds</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Priority AI Co-Pilot Processing</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Custom Team Collaboration</li>
+                            <li><i class="fa-solid fa-check text-cyan"></i> Direct Interview Scheduling Integration</li>
+                        </ul>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Agency Pro plan activated for demo!')">Upgrade to Pro</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom CTA Banner -->
+            <section class="landing-cta-banner">
+                <h2>Ready to Hire or Get Hired at the Speed of Sound?</h2>
+                <p>Join thousands of modern recruiters and candidates skipping the fluff.</p>
+                <div class="hero-cta-group" style="margin-top: 20px;">
+                    <button class="btn btn-primary btn-glow btn-lg" onclick="switchView('recruiter')">
+                        <i class="fa-solid fa-rocket"></i> Get Started Now
+                    </button>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="landing-footer">
+                <div class="footer-logo">
+                    <img src="assets/logo2.jpg" alt="BioSpark" style="width: 24px; height: 24px; border-radius: 50%;">
+                    <span>BioSpark</span>
+                </div>
+                <p>© 2026 BioSpark Technologies. All rights reserved.</p>
+            </footer>
+        </div>
+
+        <!-- 1. RECRUITER VIEW -->
+        <div class="workspace-grid" id="recruiter-workspace">
+            
+            <!-- Left Panel: Candidate Pool & Searching -->
+            <section class="panel panel-left scrollable">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-users"></i> Candidate Pool</h2>
+                </div>
+                <!-- Active Hiring Job Role Info -->
+                <div class="hiring-role-card" style="margin: 12px 20px 0 20px; padding: 12px; background: rgba(22, 28, 45, 0.45); border: 1px solid rgba(56, 139, 253, 0.22); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div>
+                        <span style="font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Active Hiring Search</span>
+                        <h4 id="active-job-title" style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">Senior Full Stack Engineer</h4>
+                        <p id="active-job-details" style="font-size: 0.68rem; color: var(--text-muted);">Amman, Jordan | $3,000 - $4,000 / mo</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btn-post-job" style="padding: 6px 10px; font-size: 0.68rem; white-space: nowrap; flex-shrink: 0;"><i class="fa-solid fa-plus"></i> Post Job</button>
+                </div>
+
+                <!-- Emergency Hire Search Bar (On-Point UX) -->
+                <div class="search-box">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="pool-search" placeholder="Emergency Hire search (e.g. Node.js Jordan AWS)...">
+                    </div>
+                    <button class="btn-search-ai" id="btn-ai-search" title="AI Match sifting">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+
+                <div class="pool-filters">
+                    <button class="filter-chip active" id="filter-all">All</button>
+                    <button class="filter-chip" id="filter-active"><span class="pulse-green"></span> Active (Last 20)</button>
+                    <button class="filter-chip" id="filter-unlocked">Unlocked</button>
+                </div>
+
+                <!-- Drag & Drop PDF Area -->
+                <div class="upload-zone" id="drop-zone">
+                    <input type="file" id="file-input" multiple accept=".pdf" style="display: none;">
+                    <i class="fa-solid fa-file-arrow-up upload-icon"></i>
+                    <p class="upload-title">Drop candidate resumes (PDF)</p>
+                    <p class="upload-subtitle">Parsed 100% locally in browser</p>
+                </div>
+
+                <!-- Active Upload Progress -->
+                <div class="upload-progress-bar" id="upload-progress-container" style="display: none;">
+                    <div class="progress-info">
+                        <span id="progress-text">Parsing resumes...</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidates List -->
+                <div class="candidate-list" id="candidates-container">
+                    <!-- Dynamic rendering -->
+                </div>
+            </section>
+
+            <!-- Middle Panel: PDF Resume Viewer -->
+            <section class="panel panel-middle scrollable">
+                <div class="panel-header flex-between">
+                    <h2><i class="fa-solid fa-file-pdf"></i> Resume Preview</h2>
+                    <div class="middle-actions" id="preview-actions" style="display: none;">
+                        <button class="btn btn-secondary btn-sm" id="btn-similar"><i class="fa-solid fa-copy"></i> Find Similar</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-download"><i class="fa-solid fa-download"></i> Save CV</button>
+                    </div>
+                </div>
+
+                <div class="preview-canvas-container" id="resume-viewer-placeholder">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-id-card empty-icon"></i>
+                        <h3>No Candidate Selected</h3>
+                        <p>Select a candidate from the pool or upload new resumes to begin sifting.</p>
+                    </div>
+                </div>
+
+                <!-- Hidden rendered PDF content or structured representation -->
+                <div class="parsed-content-view" id="resume-text-content" style="display: none;">
+                    <!-- Parsed document details styled premiumly -->
+                </div>
+            </section>
+
+            <!-- Right Panel: AI Co-pilot & Voice Checks -->
+            <section class="panel panel-right scrollable">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-brain"></i> AI Co-Pilot</h2>
+                </div>
+
+                <!-- Quick-Ask Widgets -->
+                <div class="copilot-quick-asks">
+                    <button class="btn-quick-ask" data-prompt="Summarize candidate experience"><i class="fa-solid fa-file-lines"></i> Summary</button>
+                    <button class="btn-quick-ask" data-prompt="List core technical stack and database experience"><i class="fa-solid fa-code"></i> Tech Stack</button>
+                    <button class="btn-quick-ask" data-prompt="Has this candidate worked abroad or in global teams?"><i class="fa-solid fa-globe"></i> Global Exp</button>
+                    <button class="btn-quick-ask" data-prompt="Is the candidate currently available? Check reasons."><i class="fa-solid fa-calendar-check"></i> Availability</button>
+                </div>
+
+                <!-- AI Response / Chat Area -->
+                <div class="chat-container">
+                    <div class="chat-history" id="chat-history-container">
+                        <div class="chat-bubble ai-bubble">
+                            <p>Hi, I am your BioSpark Co-Pilot. Select a candidate, and ask me any questions about their CV, or search the global database for emergency hires.</p>
+                        </div>
+                    </div>
+
+                    <!-- Input Box -->
+                    <div class="chat-input-area">
+                        <textarea id="chat-input" placeholder="Ask AI about candidate CV..."></textarea>
+                        <button class="btn-send" id="btn-send-chat"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Voice Note Exchange Widget ( Tactile & Buzz-worthy ) -->
+                <div class="voice-verification-panel" id="voice-verify-widget" style="display: none;">
+                    <div class="widget-header">
+                        <h3><i class="fa-solid fa-microphone-lines"></i> Voice Note Exchange</h3>
+                        <span class="badge badge-active"><span class="pulse-green"></span> Connectable</span>
+                    </div>
+                    <p class="widget-description">Listen to candidate's recorded pitch or record a voice inquiry to check their tone & personality.</p>
+
+                    <!-- Interactive Speaker Visualizer -->
+                    <div class="visualizer-container">
+                        <div class="avatar-circle" id="avatar-audio-indicator">
+                            <i class="fa-solid fa-user avatar-icon"></i>
+                            <div class="glow-ring"></div>
+                        </div>
+                        <div class="wave-bars" id="wave-bars-container">
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                        </div>
+                    </div>
+
+                    <div class="voice-controls">
+                        <button class="btn btn-secondary" id="btn-listen-pitch"><i class="fa-solid fa-play"></i> Play Pitch</button>
+                        <button class="btn btn-primary" id="btn-record-inquiry"><i class="fa-solid fa-microphone"></i> Record Inquiry</button>
+                    </div>
+                </div>
+
+                <!-- Monetization Paywall Unlock Overlay -->
+                <div class="contact-unlock-container" id="contact-lock-overlay" style="display: none;">
+                    <div class="unlock-card">
+                        <i class="fa-solid fa-lock unlock-icon"></i>
+                        <h3>Candidate Contact Hidden</h3>
+                        <p>Review the CV and verify availability. Unlock candidate contact details (Email, Phone, LinkedIn) to initiate scheduling.</p>
+                        <div class="pay-benefits">
+                            <span><i class="fa-solid fa-check text-cyan"></i> Instant unlock</span>
+                            <span><i class="fa-solid fa-check text-cyan"></i> verified active today</span>
+                        </div>
+                        <button class="btn btn-primary btn-glow" id="btn-unlock-contact"><i class="fa-solid fa-key"></i> Unlock Contact ($5.00)</button>
+                    </div>
+                </div>
+
+                <!-- Unlocked Candidate Info Display -->
+                <div class="unlocked-contact-panel" id="contact-info-panel" style="display: none;">
+                    <h3><i class="fa-solid fa-address-book"></i> Contact Details</h3>
+                    <div class="contact-details-grid">
+                        <div class="contact-item"><i class="fa-solid fa-envelope"></i> <span id="candidate-email">---</span></div>
+                        <div class="contact-item"><i class="fa-solid fa-phone"></i> <span id="candidate-phone">---</span></div>
+                        <div class="contact-item"><i class="fa-brands fa-linkedin"></i> <span id="candidate-linkedin">---</span></div>
+                    </div>
+                    <button class="btn btn-primary btn-glow" id="btn-schedule-interview" style="width: 100%; margin-top: 12px;">
+                        <i class="fa-solid fa-calendar-plus"></i> Schedule Interview
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 2. JOB-SEEKER VIEW -->
+        <div class="workspace-grid" id="jobseeker-workspace" style="display: none;">
+            <!-- Left Panel: Job-Seeker Account Overview -->
+            <section class="panel panel-left scrollable">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-user"></i> My Dashboard</h2>
+                </div>
+
+                <!-- Two-Option Retention Status Toggle -->
+                <div class="status-retention-card">
+                    <h3>Keep Your CV Updated</h3>
+                    <p class="status-description">Keep your profile fresh to remain at the top of recruiter feeds. Let us know your status in 5 seconds:</p>
+                    
+                    <div class="status-toggle-buttons">
+                        <button class="btn btn-status btn-status-active active" id="btn-status-available">
+                            <i class="fa-solid fa-circle-check"></i> Still Available
+                        </button>
+                        <button class="btn btn-status btn-status-archive" id="btn-status-hired">
+                            <i class="fa-solid fa-circle-xmark"></i> I Found a Job
+                        </button>
+                    </div>
+                    <p class="status-alert-text" id="status-helper-text">
+                        🟢 You are currently visible to recruiters searching for emergency hires. Bounded active feed update.
+                    </p>
+                </div>
+
+                <!-- Interactive Resume Upload Form -->
+                <div class="profile-upload-section">
+                    <h3>Update Profile PDF</h3>
+                    <p class="status-description" style="color: var(--accent-cyan); font-size: 0.72rem; margin-bottom: 8px;">
+                        ⚠️ <b>Privacy Warning:</b> Do not include sensitive details (home address, national ID, or bank details) on your CV. Only list a contact email/phone.
+                    </p>
+                    <div class="upload-zone" id="seeker-upload-zone">
+                        <input type="file" id="seeker-file-input" accept=".pdf" style="display: none;">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <p class="upload-title">Click to upload new CV</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Middle Panel: AI CV Optimizer -->
+            <section class="panel panel-middle scrollable">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> AI CV Optimizer</h2>
+                </div>
+
+                <div class="avatar-editor-card">
+                    <p class="status-description">Optimize your resume text for ATS systems and rewrite descriptions into high-impact bullet points.</p>
+                    
+                    <div class="form-group">
+                        <label for="optimizer-original-cv">Your Parsed CV Text</label>
+                        <textarea id="optimizer-original-cv" style="height: 120px;" placeholder="Upload a CV or paste your raw experience text here to analyze..."></textarea>
+                    </div>
+
+                    <div class="form-group" id="optimizer-results-container" style="display: none;">
+                        <label for="optimizer-result-cv" style="color: var(--accent-cyan);">⚡ Optimized High-Impact Wording</label>
+                        <textarea id="optimizer-result-cv" style="height: 180px;" readonly placeholder="Your polished resume text will appear here..."></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" id="btn-run-optimizer" style="flex: 1; min-width: 120px; justify-content: center;">
+                            <i class="fa-solid fa-bolt"></i> Optimize CV
+                        </button>
+                        <button class="btn btn-primary" id="btn-copy-optimized" style="flex: 1; min-width: 100px; justify-content: center; display: none;">
+                            <i class="fa-solid fa-copy"></i> Copy Text
+                        </button>
+                        <button class="btn btn-glow" id="btn-download-pdf" style="flex: 1; min-width: 120px; justify-content: center; display: none;">
+                            <i class="fa-solid fa-file-pdf"></i> Download PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-download-txt" style="flex: 1; min-width: 120px; justify-content: center; display: none; background: rgba(56, 139, 253, 0.15); border-color: rgba(56, 139, 253, 0.3);">
+                            <i class="fa-solid fa-file-arrow-down"></i> Save as TXT
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Recruiter Activity & Job Matching Feed -->
+            <section class="panel panel-right scrollable">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-bell"></i> Recruiter Activity</h2>
+                </div>
+
+                <!-- Recruiter Inquiries List -->
+                <div class="activity-feed">
+                    <div class="feed-card">
+                        <div class="feed-card-header">
+                            <span class="recruiter-tag"><i class="fa-solid fa-briefcase"></i> Senior Recruiter</span>
+                            <span class="time-tag">2 hours ago</span>
+                        </div>
+                        <p class="feed-content">A recruiter from **Apex Tech** asked your AI clone: <i>"Do you have experience managing production AWS deployments?"</i></p>
+                        <div class="inquiry-voice-reply">
+                            <p class="reply-title"><i class="fa-solid fa-microphone"></i> Recruiter Voice Message Attached:</p>
+                            <button class="btn-play-voice" onclick="playMockVoice()"><i class="fa-solid fa-play"></i> Play Inquiry</button>
+                            <button class="btn btn-secondary btn-sm" style="margin-top: 8px;"><i class="fa-solid fa-reply"></i> Record Reply</button>
+                        </div>
+                    </div>
+
+                    <div class="feed-card">
+                        <div class="feed-card-header">
+                            <span class="recruiter-tag"><i class="fa-solid fa-eye"></i> Profile View</span>
+                            <span class="time-tag">1 day ago</span>
+                        </div>
+                        <p class="feed-content">Your AI Resume answered **3 background queries** from a hiring lead in Amman, Jordan.</p>
+                    </div>
+                </div>
+
+                <!-- Job Matching Section -->
+                <div class="job-matches-section" style="margin-top: 25px;">
+                    <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Fresh Job Matches</h3>
+                    <div class="job-list">
+                        <div class="job-card">
+                            <div class="job-card-header">
+                                <h4 id="seeker-match-title">Full Stack Engineer</h4>
+                                <span class="job-salary" id="seeker-match-salary">$3K–$4K/mo</span>
+                            </div>
+                            <p class="job-meta" id="seeker-match-meta">Amman, Jordan (Hybrid)</p>
+                            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 8px;">1-Click Apply with BioSpark</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Global API Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-modal" id="close-settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="api-key-input">Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="AI-XXXXX...">
+                    <p class="input-help">An API key is required for dynamic resume questions and AI sifting. Your key is stored locally in your browser (not on our servers).</p>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="theme-select">Branding Color Scheme</label>
+                    <select id="theme-select" class="premium-select">
+                        <option value="theme-cyan-purple">Aether Cyan & Cyber Purple</option>
+                        <option value="theme-emerald-mint">Emerald Mint & Obsidian Black</option>
+                        <option value="theme-aurora-copper">Aurora Copper & Matte Slate</option>
+                        <option value="theme-indigo-royal">Indigo Royal & Polar Silver</option>
+                    </select>
+                    <p class="input-help">Change the system color palette in real-time.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-settings">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-settings">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Job Modal -->
+    <div class="modal" id="job-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Post New Job Position</h3>
+                <button class="close-modal" id="close-job-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="job-title-input">Job Title</label>
+                    <input type="text" id="job-title-input" placeholder="e.g. Senior Node.js Developer">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="job-location-input">Location</label>
+                    <input type="text" id="job-location-input" placeholder="e.g. Amman, Jordan (Hybrid)">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="job-salary-input">Salary Range</label>
+                    <input type="text" id="job-salary-input" placeholder="e.g. $3,000 - $4,000 / month">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="job-requirements-input">Job Requirements / Core Skills</label>
+                    <textarea id="job-requirements-input" style="height: 80px;" placeholder="e.g. Node.js, AWS, React, PostgreSQL"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-job">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-job">Post Job Position</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-btn active" id="mob-tab-1" onclick="switchMobileTab(1)">
+            <i class="fa-solid fa-users mobile-tab-icon-recruiter"></i>
+            <i class="fa-solid fa-user mobile-tab-icon-seeker" style="display: none;"></i>
+            <span class="mobile-tab-text" id="mob-tab-text-1">Pool</span>
+        </button>
+        <button class="mobile-nav-btn" id="mob-tab-2" onclick="switchMobileTab(2)">
+            <i class="fa-solid fa-file-pdf mobile-tab-icon-recruiter"></i>
+            <i class="fa-solid fa-wand-magic-sparkles mobile-tab-icon-seeker" style="display: none;"></i>
+            <span class="mobile-tab-text" id="mob-tab-text-2">Resume</span>
+        </button>
+        <button class="mobile-nav-btn" id="mob-tab-3" onclick="switchMobileTab(3)">
+            <i class="fa-solid fa-brain mobile-tab-icon-recruiter"></i>
+            <i class="fa-solid fa-bell mobile-tab-icon-seeker" style="display: none;"></i>
+            <span class="mobile-tab-text" id="mob-tab-text-3">Co-Pilot</span>
+        </button>
+    </nav>
+
+    <!-- Script File -->
+    <script src="app.js"></script>
+</body>
+</html>
