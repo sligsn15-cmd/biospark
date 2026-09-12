@@ -507,14 +507,20 @@
                     </div>
                     <p class="status-description">Record a quick 30s audio intro. Recruiters listen to this before reviewing your CV!</p>
                     
-                    <div class="voice-verification-panel" style="margin-top: 10px; background: rgba(13, 17, 28, 0.6); padding: 12px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.2);">
-                        <canvas id="seeker-pitch-canvas" width="220" height="36" style="width: 100%; height: 36px; background: rgba(0,0,0,0.4); border-radius: 6px; margin-bottom: 8px; display: block;"></canvas>
+                    <div class="elevator-pitch-box" style="margin-top: 12px; background: rgba(13, 17, 28, 0.7); padding: 14px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.25); text-align: center; box-sizing: border-box; width: 100%;">
+                        <canvas id="seeker-pitch-canvas" width="240" height="38" style="width: 100%; height: 38px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid rgba(255,255,255,0.05);"></canvas>
                         
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" id="btn-record-pitch" style="flex: 1; justify-content: center; font-size: 0.78rem;">
+                        <!-- Live Recording Timer Display -->
+                        <div id="pitch-timer-display" style="display: none; align-items: center; justify-content: center; gap: 8px; font-family: monospace; font-size: 0.88rem; font-weight: 700; color: #f87171; margin-bottom: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); padding: 4px 10px; border-radius: 20px;">
+                            <span class="pulse-red" style="display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 8px #ef4444; animation: pulse 1s infinite alternate;"></span>
+                            <span id="pitch-timer-text">00:00 / 00:30</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; justify-content: center; width: 100%; box-sizing: border-box;">
+                            <button class="btn btn-secondary" id="btn-record-pitch" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 9px 12px; white-space: nowrap;">
                                 <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record Pitch</span>
                             </button>
-                            <button class="btn btn-primary" id="btn-play-my-pitch" style="display: none; justify-content: center; font-size: 0.78rem;">
+                            <button class="btn btn-primary" id="btn-play-my-pitch" style="flex: 1; display: none; justify-content: center; font-size: 0.8rem; padding: 9px 12px; white-space: nowrap;">
                                 <i class="fa-solid fa-play"></i> Listen
                             </button>
                         </div>
