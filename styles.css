@@ -104,8 +104,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Custom Scrollbars */
 .scrollable {
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(56, 139, 253, 0.2) transparent;
+    padding-bottom: 50px;
 }
 
 .scrollable::-webkit-scrollbar {
@@ -1160,7 +1162,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .profile-upload-section {
-    padding: 0 20px;
+    padding: 0 20px 40px 20px;
+    margin-bottom: 30px;
 }
 
 .profile-upload-section h3 {
@@ -1512,9 +1515,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Responsive Media Queries */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     body {
-        padding-bottom: 60px; /* Make room for bottom nav */
+        padding-bottom: 60px; /* Make room for bottom nav on mobile */
     }
 
     /* Change header layout */

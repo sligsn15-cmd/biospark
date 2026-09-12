@@ -220,7 +220,7 @@ function switchView(target) {
         if (dom.landingWorkspace) dom.landingWorkspace.style.display = 'none';
         dom.recruiterWorkspace.style.display = 'grid';
         dom.jobseekerWorkspace.style.display = 'none';
-        if (mobileBottomNav) mobileBottomNav.style.display = 'flex';
+        if (mobileBottomNav) mobileBottomNav.style.display = window.innerWidth <= 768 ? 'grid' : 'none';
         renderCandidates();
 
         // Mobile Nav UI Adjustments
@@ -237,7 +237,7 @@ function switchView(target) {
         if (dom.landingWorkspace) dom.landingWorkspace.style.display = 'none';
         dom.recruiterWorkspace.style.display = 'none';
         dom.jobseekerWorkspace.style.display = 'grid';
-        if (mobileBottomNav) mobileBottomNav.style.display = 'flex';
+        if (mobileBottomNav) mobileBottomNav.style.display = window.innerWidth <= 768 ? 'grid' : 'none';
         loadJobSeekerConfig();
 
         // Mobile Nav UI Adjustments
