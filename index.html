@@ -18,33 +18,45 @@
 
     <!-- Top Navigation Bar -->
     <header class="app-header">
-        <div class="logo-area">
+        <div class="logo-area" onclick="logoutRole()" style="cursor: pointer;" title="BioSpark Home">
             <div class="logo-icon" style="background: none; overflow: hidden; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
                 <img src="assets/logo2.jpg" alt="BioSpark Logo" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <span class="logo-text">BioSpark</span>
+            <span class="badge" id="header-role-badge" style="display: none; font-size: 0.72rem; padding: 3px 9px; border-radius: 12px; font-weight: 600;"></span>
         </div>
         
-        <!-- View Toggle Controls (Easy-to-use UX) -->
-        <div class="view-toggles">
-            <button class="view-btn" id="view-landing" onclick="switchView('landing')">
-                <i class="fa-solid fa-house"></i> Home
-            </button>
-            <button class="view-btn active" id="view-recruiter" onclick="switchView('recruiter')">
-                <i class="fa-solid fa-briefcase"></i> Recruiter Workspace
-            </button>
-            <button class="view-btn" id="view-jobseeker" onclick="switchView('jobseeker')">
-                <i class="fa-solid fa-user-tie"></i> Job-Seeker Portal
-            </button>
+        <!-- Public Navigation (When on Landing Page) -->
+        <div class="landing-nav-links" id="landing-nav-links">
+            <a href="#features-section" class="nav-link" onclick="scrollToLandingSection('features-section')">Features</a>
+            <a href="#workflow-section" class="nav-link" onclick="scrollToLandingSection('workflow-section')">How It Works</a>
+            <a href="#pricing-section" class="nav-link" onclick="scrollToLandingSection('pricing-section')">Pricing</a>
         </div>
 
         <div class="nav-actions">
-            <button class="btn btn-icon" id="btn-settings" title="Settings / API Key">
-                <i class="fa-solid fa-gear"></i>
-            </button>
-            <button class="btn btn-primary" id="btn-upgrade" onclick="switchView('landing'); document.getElementById('pricing-section').scrollIntoView({behavior: 'smooth'});">
-                <i class="fa-solid fa-crown"></i> Get Pro
-            </button>
+            <!-- Landing Action Buttons -->
+            <div id="landing-action-btns" style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary btn-sm" onclick="openRoleSignupModal('signin')">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                </button>
+                <button class="btn btn-primary btn-sm btn-glow" onclick="openRoleSignupModal('signup')">
+                    <i class="fa-solid fa-sparkles"></i> Get Started Free
+                </button>
+            </div>
+
+            <!-- Workspace Persona Actions (Recruiter or Job-Seeker) -->
+            <div id="workspace-user-actions" style="display: none; align-items: center; gap: 10px;">
+                <button class="btn btn-icon" id="btn-settings" title="Settings / API Key">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <div class="user-role-pill" id="user-role-pill">
+                    <span class="role-indicator-dot"></span>
+                    <span id="user-role-pill-text">User Mode</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logoutRole()" title="Exit Workspace / Switch Role">
+                    <i class="fa-solid fa-right-from-bracket"></i> Switch Role
+                </button>
+            </div>
         </div>
     </header>
 
@@ -67,13 +79,34 @@
                 <p class="hero-subtitle">
                     The interactive hiring platform where candidate CVs talk, availability is verified in real-time, and recruiters sift 100+ talent profiles in seconds with AI Co-Pilot & authentic voice notes.
                 </p>
-                <div class="hero-cta-group">
-                    <button class="btn btn-primary btn-glow btn-lg" onclick="switchView('recruiter')">
-                        <i class="fa-solid fa-briefcase"></i> Launch Recruiter Workspace
-                    </button>
-                    <button class="btn btn-secondary btn-lg" onclick="switchView('jobseeker')">
-                        <i class="fa-solid fa-wand-magic-sparkles text-cyan"></i> Optimize CV Free
-                    </button>
+                
+                <!-- Two Distinct Sign-Up / Get Started Doors -->
+                <div class="role-selector-hero-grid">
+                    <!-- Option 1: Job Seeker -->
+                    <div class="role-card role-card-seeker" onclick="selectUserRole('jobseeker')">
+                        <div class="role-card-badge">✨ 100% Free For Candidates</div>
+                        <div class="role-card-icon">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <h3>I am a Job Seeker</h3>
+                        <p>Create your interactive talkable CV, record a 30s elevator pitch, optimize for ATS, and get discovered by active recruiters.</p>
+                        <button class="btn btn-secondary btn-role-action">
+                            <i class="fa-solid fa-wand-magic-sparkles text-cyan"></i> Join as Job Seeker <i class="fa-solid fa-arrow-right" style="margin-left: auto;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Option 2: Recruiter -->
+                    <div class="role-card role-card-recruiter" onclick="selectUserRole('recruiter')">
+                        <div class="role-card-badge role-badge-purple">⚡ AI Sifting & Voice Screening</div>
+                        <div class="role-card-icon">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <h3>I am a Recruiter / Employer</h3>
+                        <p>Search active candidate pools, sift 100+ CVs with AI prompts, and send voice screening notes in seconds.</p>
+                        <button class="btn btn-primary btn-glow btn-role-action">
+                            <i class="fa-solid fa-bolt"></i> Launch Recruiter Suite <i class="fa-solid fa-arrow-right" style="margin-left: auto;"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Trust Badges -->
@@ -94,7 +127,7 @@
             </section>
 
             <!-- Interactive Pillars Section -->
-            <section class="landing-section">
+            <section class="landing-section" id="features-section">
                 <div class="section-header-center">
                     <span class="section-tag">Core Features</span>
                     <h2>Built to Solve What Traditional Job Boards Break</h2>
@@ -137,7 +170,7 @@
             </section>
 
             <!-- How It Works Flow -->
-            <section class="landing-section bg-card-layer">
+            <section class="landing-section bg-card-layer" id="workflow-section">
                 <div class="section-header-center">
                     <span class="section-tag">Workflow</span>
                     <h2>How BioSpark Works for Both Sides</h2>
@@ -239,7 +272,7 @@
                             <li><i class="fa-solid fa-check text-cyan"></i> Voice Inquiry Inbox & Microphone Replies</li>
                             <li><i class="fa-solid fa-check text-cyan"></i> Privacy Protected Contact Guard</li>
                         </ul>
-                        <button class="btn btn-secondary" style="width: 100%;" onclick="switchView('jobseeker')">Start Optimizing Free</button>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="selectUserRole('jobseeker')">Start Free as Job Seeker</button>
                     </div>
 
                     <!-- Pay As You Go Recruiter Card (Highlighted) -->
@@ -257,7 +290,7 @@
                             <li><i class="fa-solid fa-check text-cyan"></i> Instant Email, Phone & LinkedIn Reveal</li>
                             <li><i class="fa-solid fa-check text-cyan"></i> Zero monthly commitments or lock-ins</li>
                         </ul>
-                        <button class="btn btn-primary btn-glow" style="width: 100%;" onclick="switchView('recruiter')">Launch Workspace</button>
+                        <button class="btn btn-primary btn-glow" style="width: 100%;" onclick="selectUserRole('recruiter')">Launch Recruiter Workspace</button>
                     </div>
 
                     <!-- Agency Pro Card -->
@@ -274,7 +307,7 @@
                             <li><i class="fa-solid fa-check text-cyan"></i> Custom Team Collaboration</li>
                             <li><i class="fa-solid fa-check text-cyan"></i> Direct Interview Scheduling Integration</li>
                         </ul>
-                        <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Agency Pro plan activated for demo!')">Upgrade to Pro</button>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="selectUserRole('recruiter')">Start Agency Pro Trial</button>
                     </div>
                 </div>
             </section>
@@ -284,8 +317,8 @@
                 <h2>Ready to Hire or Get Hired at the Speed of Sound?</h2>
                 <p>Join thousands of modern recruiters and candidates skipping the fluff.</p>
                 <div class="hero-cta-group" style="margin-top: 20px;">
-                    <button class="btn btn-primary btn-glow btn-lg" onclick="switchView('recruiter')">
-                        <i class="fa-solid fa-rocket"></i> Get Started Now
+                    <button class="btn btn-primary btn-glow btn-lg" onclick="openRoleSignupModal('signup')">
+                        <i class="fa-solid fa-rocket"></i> Get Started Free
                     </button>
                 </div>
             </section>
@@ -817,6 +850,49 @@
             <span class="mobile-tab-text" id="mob-tab-text-3">Co-Pilot</span>
         </button>
     </nav>
+
+    <!-- 5. ROLE SIGNUP / GET STARTED MODAL -->
+    <div class="modal" id="role-signup-modal">
+        <div class="modal-content" style="max-width: 620px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-sparkles text-cyan"></i> <span id="role-modal-title">Join BioSpark</span></h2>
+                <button class="close-modal" id="close-role-signup-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding-top: 10px;">
+                <p class="status-description" style="text-align: center; font-size: 0.95rem; margin-bottom: 24px;">
+                    Select your account type to proceed directly to your customized workspace:
+                </p>
+
+                <div class="role-modal-grid">
+                    <!-- Option 1: Job Seeker -->
+                    <div class="role-selection-card seeker-card" onclick="selectUserRole('jobseeker')">
+                        <div class="role-selection-badge">✨ 100% Free</div>
+                        <div class="role-selection-icon bg-cyan-glow">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <h3>I am a Job Seeker</h3>
+                        <p>Create an interactive voice CV, get ATS optimization, and stay visible to hiring managers searching for verified talent.</p>
+                        <button class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; font-weight: 600; margin-top: auto;">
+                            Continue as Candidate <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Option 2: Recruiter -->
+                    <div class="role-selection-card recruiter-card" onclick="selectUserRole('recruiter')">
+                        <div class="role-selection-badge badge-purple">⚡ Sifting & Voice</div>
+                        <div class="role-selection-icon bg-purple-glow">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <h3>I am a Recruiter</h3>
+                        <p>Search active candidate pools, sift CVs with AI Co-Pilot, and screen spoken communication via 30s voice notes.</p>
+                        <button class="btn btn-primary btn-sm btn-glow" style="width: 100%; justify-content: center; font-weight: 600; margin-top: auto;">
+                            Launch Recruiter Suite <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Script File -->
     <script src="app.js"></script>

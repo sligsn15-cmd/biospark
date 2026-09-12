@@ -163,7 +163,16 @@ const dom = {
     closeShareModal: document.getElementById('close-share-modal'),
     btnCloseShareModalFooter: document.getElementById('btn-close-share-modal-footer'),
     sharePortfolioUrl: document.getElementById('share-portfolio-url'),
-    btnCopyShareUrl: document.getElementById('btn-copy-share-url')
+    btnCopyShareUrl: document.getElementById('btn-copy-share-url'),
+    roleSignupModal: document.getElementById('role-signup-modal'),
+    closeRoleSignupModal: document.getElementById('close-role-signup-modal'),
+    roleModalTitle: document.getElementById('role-modal-title'),
+    landingNavLinks: document.getElementById('landing-nav-links'),
+    landingActionBtns: document.getElementById('landing-action-btns'),
+    workspaceUserActions: document.getElementById('workspace-user-actions'),
+    headerRoleBadge: document.getElementById('header-role-badge'),
+    userRolePill: document.getElementById('user-role-pill'),
+    userRolePillText: document.getElementById('user-role-pill-text')
 };
 
 // --- INIT APP ---
@@ -189,13 +198,65 @@ window.addEventListener('DOMContentLoaded', () => {
     initJobModal();
     initElevatorPitchRecorder();
     initSharePortfolioModal();
+    initRoleSignupModal();
     
-    // Set initial view (defaults to landing page)
-    const initialView = localStorage.getItem('biospark_last_view') || 'landing';
+    // Set initial view (defaults to landing or saved role)
+    const savedRole = localStorage.getItem('biospark_user_role');
+    const initialView = savedRole ? savedRole : (localStorage.getItem('biospark_last_view') || 'landing');
     switchView(initialView);
 });
 
-// --- ROUTING / VIEW SWITCHING ---
+// --- ROLE SELECTION & AUTH FLOW ---
+function selectUserRole(role) {
+    state.userRole = role;
+    localStorage.setItem('biospark_user_role', role);
+    closeRoleSignupModal();
+    switchView(role);
+}
+
+function logoutRole() {
+    state.userRole = null;
+    localStorage.removeItem('biospark_user_role');
+    switchView('landing');
+}
+
+function openRoleSignupModal(mode = 'signup') {
+    if (dom.roleModalTitle) {
+        dom.roleModalTitle.textContent = mode === 'signin' ? 'Sign In to BioSpark' : 'Join BioSpark';
+    }
+    if (dom.roleSignupModal) {
+        dom.roleSignupModal.classList.add('open');
+    }
+}
+
+function closeRoleSignupModal() {
+    if (dom.roleSignupModal) {
+        dom.roleSignupModal.classList.remove('open');
+    }
+}
+
+function initRoleSignupModal() {
+    if (dom.closeRoleSignupModal) {
+        dom.closeRoleSignupModal.addEventListener('click', closeRoleSignupModal);
+    }
+    if (dom.roleSignupModal) {
+        dom.roleSignupModal.addEventListener('click', (e) => {
+            if (e.target === dom.roleSignupModal) closeRoleSignupModal();
+        });
+    }
+}
+
+function scrollToLandingSection(sectionId) {
+    if (state.currentView !== 'landing') {
+        switchView('landing');
+    }
+    setTimeout(() => {
+        const sec = document.getElementById(sectionId);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+}
+
+// --- ROUTING / VIEW SWITCHING (Strict Persona Isolation) ---
 function switchView(target) {
     state.currentView = target;
     localStorage.setItem('biospark_last_view', target);
@@ -209,46 +270,91 @@ function switchView(target) {
     const mobileBottomNav = document.querySelector('.mobile-bottom-nav');
     
     if (target === 'landing') {
-        if (dom.viewLanding) dom.viewLanding.classList.add('active');
-        dom.viewRecruiter.classList.remove('active');
-        dom.viewJobseeker.classList.remove('active');
+        // Show Landing Page
         if (dom.landingWorkspace) dom.landingWorkspace.style.display = 'block';
-        dom.recruiterWorkspace.style.display = 'none';
-        dom.jobseekerWorkspace.style.display = 'none';
+        if (dom.recruiterWorkspace) dom.recruiterWorkspace.style.display = 'none';
+        if (dom.jobseekerWorkspace) dom.jobseekerWorkspace.style.display = 'none';
+        
+        // Header in Public Landing Mode
+        if (dom.landingNavLinks) dom.landingNavLinks.style.display = 'flex';
+        if (dom.landingActionBtns) dom.landingActionBtns.style.display = 'flex';
+        if (dom.workspaceUserActions) dom.workspaceUserActions.style.display = 'none';
+        if (dom.headerRoleBadge) dom.headerRoleBadge.style.display = 'none';
+        
         if (mobileBottomNav) mobileBottomNav.style.display = 'none';
     } else if (target === 'recruiter') {
-        if (dom.viewLanding) dom.viewLanding.classList.remove('active');
-        dom.viewRecruiter.classList.add('active');
-        dom.viewJobseeker.classList.remove('active');
+        // Show Recruiter Workspace
         if (dom.landingWorkspace) dom.landingWorkspace.style.display = 'none';
-        dom.recruiterWorkspace.style.display = 'grid';
-        dom.jobseekerWorkspace.style.display = 'none';
+        if (dom.recruiterWorkspace) dom.recruiterWorkspace.style.display = 'grid';
+        if (dom.jobseekerWorkspace) dom.jobseekerWorkspace.style.display = 'none';
+        
+        // Header in Recruiter Mode (Job Seeker links are completely hidden)
+        if (dom.landingNavLinks) dom.landingNavLinks.style.display = 'none';
+        if (dom.landingActionBtns) dom.landingActionBtns.style.display = 'none';
+        if (dom.workspaceUserActions) dom.workspaceUserActions.style.display = 'flex';
+        
+        if (dom.headerRoleBadge) {
+            dom.headerRoleBadge.style.display = 'inline-block';
+            dom.headerRoleBadge.style.background = 'rgba(168, 85, 247, 0.18)';
+            dom.headerRoleBadge.style.color = '#c084fc';
+            dom.headerRoleBadge.textContent = 'Recruiter Suite';
+        }
+        if (dom.userRolePill) {
+            dom.userRolePill.className = 'user-role-pill role-pill-recruiter';
+        }
+        if (dom.userRolePillText) {
+            dom.userRolePillText.textContent = 'Recruiter Mode';
+        }
+        
         if (mobileBottomNav) mobileBottomNav.style.display = window.innerWidth <= 768 ? 'grid' : 'none';
         renderCandidates();
 
-        // Mobile Nav UI Adjustments
+        // Mobile Nav UI Adjustments for Recruiter
         recIcons.forEach(el => el.style.display = 'inline-block');
         seekerIcons.forEach(el => el.style.display = 'none');
-        document.getElementById('mob-tab-text-1').textContent = 'Pool';
-        document.getElementById('mob-tab-text-2').textContent = 'Resume';
-        document.getElementById('mob-tab-text-3').textContent = 'Co-Pilot';
+        const tab1 = document.getElementById('mob-tab-text-1');
+        const tab2 = document.getElementById('mob-tab-text-2');
+        const tab3 = document.getElementById('mob-tab-text-3');
+        if (tab1) tab1.textContent = 'Pool';
+        if (tab2) tab2.textContent = 'Resume';
+        if (tab3) tab3.textContent = 'Co-Pilot';
         switchMobileTab(1);
     } else {
-        if (dom.viewLanding) dom.viewLanding.classList.remove('active');
-        dom.viewRecruiter.classList.remove('active');
-        dom.viewJobseeker.classList.add('active');
+        // Show Job-Seeker Portal
         if (dom.landingWorkspace) dom.landingWorkspace.style.display = 'none';
-        dom.recruiterWorkspace.style.display = 'none';
-        dom.jobseekerWorkspace.style.display = 'grid';
+        if (dom.recruiterWorkspace) dom.recruiterWorkspace.style.display = 'none';
+        if (dom.jobseekerWorkspace) dom.jobseekerWorkspace.style.display = 'grid';
+        
+        // Header in Job-Seeker Mode (Recruiter links are completely hidden)
+        if (dom.landingNavLinks) dom.landingNavLinks.style.display = 'none';
+        if (dom.landingActionBtns) dom.landingActionBtns.style.display = 'none';
+        if (dom.workspaceUserActions) dom.workspaceUserActions.style.display = 'flex';
+        
+        if (dom.headerRoleBadge) {
+            dom.headerRoleBadge.style.display = 'inline-block';
+            dom.headerRoleBadge.style.background = 'rgba(0, 242, 254, 0.15)';
+            dom.headerRoleBadge.style.color = 'var(--accent-cyan)';
+            dom.headerRoleBadge.textContent = 'Job-Seeker Portal';
+        }
+        if (dom.userRolePill) {
+            dom.userRolePill.className = 'user-role-pill role-pill-seeker';
+        }
+        if (dom.userRolePillText) {
+            dom.userRolePillText.textContent = 'Malik (Job Seeker)';
+        }
+        
         if (mobileBottomNav) mobileBottomNav.style.display = window.innerWidth <= 768 ? 'grid' : 'none';
         loadJobSeekerConfig();
 
-        // Mobile Nav UI Adjustments
+        // Mobile Nav UI Adjustments for Job Seeker
         recIcons.forEach(el => el.style.display = 'none');
         seekerIcons.forEach(el => el.style.display = 'inline-block');
-        document.getElementById('mob-tab-text-1').textContent = 'Dashboard';
-        document.getElementById('mob-tab-text-2').textContent = 'Optimize';
-        document.getElementById('mob-tab-text-3').textContent = 'Activity';
+        const tab1 = document.getElementById('mob-tab-text-1');
+        const tab2 = document.getElementById('mob-tab-text-2');
+        const tab3 = document.getElementById('mob-tab-text-3');
+        if (tab1) tab1.textContent = 'Dashboard';
+        if (tab2) tab2.textContent = 'Optimize';
+        if (tab3) tab3.textContent = 'Activity';
         switchMobileTab(1);
     }
 }
