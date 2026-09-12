@@ -746,26 +746,25 @@ function selectCandidate(id) {
     const hasPitch = !!(candidate.pitch || candidate.pitchAudioBlob);
     const isThisPitchPlaying = currentPitchCandidateId === candidate.id;
     const pitchBannerHtml = hasPitch ? `
-        <div class="cv-pitch-card" style="background: linear-gradient(135deg, rgba(22, 28, 45, 0.9), rgba(13, 17, 28, 0.95)); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
-                        <i class="fa-solid fa-microphone-lines"></i>
-                    </span>
-                    <strong style="font-size: 0.92rem; color: #fff;">Attached 30s Voice Introduction</strong>
-                </div>
-                <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.72rem; padding: 3px 8px; border-radius: 10px;">
-                    <i class="fa-solid fa-circle-check"></i> Verified Audio
+        <div class="cv-pitch-card" style="background: linear-gradient(135deg, rgba(22, 28, 45, 0.9), rgba(13, 17, 28, 0.95)); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="width: 36px; height: 36px; border-radius: 50%; background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                    <i class="fa-solid fa-microphone-lines"></i>
                 </span>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <strong style="font-size: 0.92rem; color: #fff;">30s Voice Introduction</strong>
+                        <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;">
+                            <i class="fa-solid fa-circle-check"></i> Verified Audio
+                        </span>
+                    </div>
+                    <span style="font-size: 0.74rem; color: var(--text-muted);"><i class="fa-solid fa-headphones"></i> Listen to evaluate communication & personality</span>
+                </div>
             </div>
-            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4; font-style: italic;">
-                "${candidate.pitch || 'Candidate recorded a custom voice introduction introducing their background and core strengths.'}"
-            </p>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-glow" id="btn-cv-play-intro" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 8px 16px; font-size: 0.8rem; background: ${isThisPitchPlaying ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'var(--gradient-glow)'}; border-color: ${isThisPitchPlaying ? '#ef4444' : 'transparent'};">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn btn-primary btn-glow" id="btn-cv-play-intro" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 9px 18px; font-size: 0.82rem; font-weight: 600; background: ${isThisPitchPlaying ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'var(--gradient-glow)'}; border-color: ${isThisPitchPlaying ? '#ef4444' : 'transparent'};">
                     <i class="fa-solid fa-${isThisPitchPlaying ? 'square' : 'play'}"></i> ${isThisPitchPlaying ? 'Stop Listening' : `Listen to Voice Intro (${candidate.pitchDuration || '0:28'})`}
                 </button>
-                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-headphones"></i> Listen to evaluate tone & communication</span>
             </div>
         </div>
     ` : '';
