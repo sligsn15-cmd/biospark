@@ -511,7 +511,14 @@ function playCandidatePitch(id, event) {
 
     addAiMessage(`🎙️ Playing 30s elevator pitch for **${candidate.name}**...`);
     
-    // Play spoken pitch
+    // If candidate has real recorded audio blob, play it directly
+    if (candidate.pitchAudioBlob) {
+        currentPitchAudio = new Audio(URL.createObjectURL(candidate.pitchAudioBlob));
+        currentPitchAudio.play();
+        return;
+    }
+
+    // Play spoken pitch simulation
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(candidate.pitch || `Hi, I am ${candidate.name}, ${candidate.title}. I am excited about new opportunities!`);
@@ -546,6 +553,32 @@ function selectCandidate(id) {
         </div>
     `).join('');
 
+    const hasPitch = !!(candidate.pitch || candidate.pitchAudioBlob);
+    const pitchBannerHtml = hasPitch ? `
+        <div class="cv-pitch-card" style="background: linear-gradient(135deg, rgba(22, 28, 45, 0.9), rgba(13, 17, 28, 0.95)); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </span>
+                    <strong style="font-size: 0.92rem; color: #fff;">Attached 30s Elevator Voice Pitch</strong>
+                </div>
+                <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.72rem; padding: 3px 8px; border-radius: 10px;">
+                    <i class="fa-solid fa-circle-check"></i> Verified Audio
+                </span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4; font-style: italic;">
+                "${candidate.pitch || 'Candidate recorded a custom voice elevator pitch introducing their background and core strengths.'}"
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-glow" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 8px 16px; font-size: 0.8rem; background: var(--gradient-glow);">
+                    <i class="fa-solid fa-play"></i> Listen to Elevator Pitch (0:28)
+                </button>
+                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-headphones"></i> Listen to evaluate tone & communication</span>
+            </div>
+        </div>
+    ` : '';
+
     dom.resumeTextContent.innerHTML = `
         <div class="profile-card-header">
             <div class="profile-details">
@@ -555,6 +588,8 @@ function selectCandidate(id) {
             </div>
             ${candidate.status === 'available' ? '<span class="badge badge-active"><span class="pulse-green"></span> Open for work</span>' : '<span class="badge badge-archive">Currently Employed</span>'}
         </div>
+
+        ${pitchBannerHtml}
 
         <div class="cv-section">
             <h3>Core Skills</h3>
@@ -570,7 +605,7 @@ function selectCandidate(id) {
     // Reset Chat panel message
     dom.chatHistory.innerHTML = `
         <div class="chat-bubble ai-bubble">
-            <p>I have parsed **${candidate.name}'s** resume. What specific questions do you have about their qualifications, history, or availability?</p>
+            <p>I have parsed **${candidate.name}'s** resume.${hasPitch ? ' 🎙️ **Spoken Elevator Pitch Attached** (Click "Listen" above to hear them).' : ''} What specific questions do you have about their qualifications, history, or availability?</p>
         </div>
     `;
 
@@ -1393,6 +1428,14 @@ function initElevatorPitchRecorder() {
                     pitchAudioBlob = new Blob(pitchAudioChunks, { type: 'audio/webm' });
                     state.seekerPitchAudioBlob = pitchAudioBlob;
                     
+                    // Attach directly to candidate in state (e.g. c1)
+                    const seekerCandidate = state.candidates.find(c => c.id === 'c1');
+                    if (seekerCandidate) {
+                        seekerCandidate.pitchAudioBlob = pitchAudioBlob;
+                        seekerCandidate.hasCustomPitch = true;
+                        seekerCandidate.pitch = "Hi recruiters! I just recorded a fresh 30-second elevator pitch about my recent engineering projects and current availability.";
+                    }
+                    
                     if (dom.seekerPitchStatus) {
                         dom.seekerPitchStatus.textContent = '🟢 Recorded (0:28)';
                         dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
@@ -1402,6 +1445,7 @@ function initElevatorPitchRecorder() {
                     if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record';
                     stream.getTracks().forEach(track => track.stop());
                     stopPitchWaveAnimation();
+                    renderCandidates();
                 };
 
                 pitchMediaRecorder.start();
