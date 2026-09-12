@@ -507,35 +507,36 @@
                     </div>
                     <p class="status-description">Record a quick 30s audio intro. Recruiters listen to this before reviewing your CV!</p>
                     
-                    <div class="elevator-pitch-box" style="margin-top: 12px; background: rgba(13, 17, 28, 0.7); padding: 14px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.25); text-align: center; box-sizing: border-box; width: 100%;">
-                        <canvas id="seeker-pitch-canvas" width="240" height="38" style="width: 100%; height: 38px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid rgba(255,255,255,0.05);"></canvas>
+                    <div class="elevator-pitch-box" style="margin-top: 12px; background: rgba(13, 17, 28, 0.75); padding: 14px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.25); text-align: center; box-sizing: border-box; width: 100%;">
+                        <canvas id="seeker-pitch-canvas" width="280" height="38" style="width: 100%; height: 38px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid rgba(255,255,255,0.06);"></canvas>
                         
-                        <!-- Live Recording Timer Display -->
-                        <div id="pitch-timer-display" style="display: none; align-items: center; justify-content: center; gap: 8px; font-family: monospace; font-size: 0.88rem; font-weight: 700; color: #f87171; margin-bottom: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); padding: 4px 10px; border-radius: 20px;">
-                            <span class="pulse-red" style="display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 8px #ef4444; animation: pulse 1s infinite alternate;"></span>
+                        <!-- Live Recording Timer Display (Persistent & Clean) -->
+                        <div id="pitch-timer-display" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-family: monospace; font-size: 0.88rem; font-weight: 700; color: #a1a1aa; margin-bottom: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 20px; transition: all 0.3s ease;">
+                            <span id="pitch-timer-dot" style="display: inline-block; width: 8px; height: 8px; background: #71717a; border-radius: 50%;"></span>
                             <span id="pitch-timer-text">00:00 / 00:30</span>
                         </div>
 
-                        <div style="display: flex; gap: 8px; justify-content: center; width: 100%; box-sizing: border-box;">
-                            <button class="btn btn-secondary" id="btn-record-pitch" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 9px 12px; white-space: nowrap;">
-                                <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record Pitch</span>
+                        <!-- Full-width Action Stack: Never squished or cut off -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
+                            <button class="btn btn-secondary" id="btn-record-pitch" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600;">
+                                <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record 30s Pitch</span>
                             </button>
-                            <button class="btn btn-primary" id="btn-play-my-pitch" style="flex: 1; display: none; justify-content: center; font-size: 0.8rem; padding: 9px 12px; white-space: nowrap;">
-                                <i class="fa-solid fa-play"></i> Listen
+                            <button class="btn btn-primary" id="btn-play-my-pitch" style="width: 100%; display: none; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600; background: linear-gradient(135deg, #a855f7, #388bfd);">
+                                <i class="fa-solid fa-play"></i> Listen to My Pitch
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Share Public Portfolio Button -->
-                <div style="margin-bottom: 16px;">
+                <div style="margin: 0 20px 16px 20px;">
                     <button class="btn btn-glow btn-primary" id="btn-open-share-modal" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700;">
                         <i class="fa-solid fa-share-nodes"></i> Share Public Portfolio
                     </button>
                 </div>
 
                 <!-- Interactive Resume Upload Form -->
-                <div class="profile-upload-section" style="padding: 0 20px 50px 20px; margin-bottom: 30px;">
+                <div class="profile-upload-section" style="padding: 0 20px 80px 20px; margin-bottom: 50px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <h3 style="margin-bottom: 0;"><i class="fa-solid fa-file-arrow-up text-cyan"></i> Update Profile PDF</h3>
                     </div>

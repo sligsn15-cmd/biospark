@@ -156,6 +156,7 @@ const dom = {
     seekerPitchStatus: document.getElementById('seeker-pitch-status'),
     recordPitchText: document.getElementById('record-pitch-text'),
     pitchTimerDisplay: document.getElementById('pitch-timer-display'),
+    pitchTimerDot: document.getElementById('pitch-timer-dot'),
     pitchTimerText: document.getElementById('pitch-timer-text'),
     btnOpenShareModal: document.getElementById('btn-open-share-modal'),
     sharePortfolioModal: document.getElementById('share-portfolio-modal'),
@@ -1416,6 +1417,38 @@ let pitchSeconds = 0;
 function initElevatorPitchRecorder() {
     if (!dom.btnRecordPitch) return;
 
+    const setTimerRecordingState = (seconds) => {
+        if (dom.pitchTimerDisplay) {
+            dom.pitchTimerDisplay.style.background = 'rgba(239, 68, 68, 0.15)';
+            dom.pitchTimerDisplay.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+            dom.pitchTimerDisplay.style.color = '#f87171';
+        }
+        if (dom.pitchTimerDot) {
+            dom.pitchTimerDot.style.background = '#ef4444';
+            dom.pitchTimerDot.style.boxShadow = '0 0 8px #ef4444';
+            dom.pitchTimerDot.className = 'pulse-red';
+        }
+        if (dom.pitchTimerText) {
+            dom.pitchTimerText.textContent = `🔴 00:${seconds < 10 ? '0' : ''}${seconds} / 00:30`;
+        }
+    };
+
+    const setTimerSavedState = (durationStr) => {
+        if (dom.pitchTimerDisplay) {
+            dom.pitchTimerDisplay.style.background = 'rgba(46, 160, 67, 0.12)';
+            dom.pitchTimerDisplay.style.borderColor = 'rgba(46, 160, 67, 0.4)';
+            dom.pitchTimerDisplay.style.color = '#3fb950';
+        }
+        if (dom.pitchTimerDot) {
+            dom.pitchTimerDot.style.background = '#3fb950';
+            dom.pitchTimerDot.style.boxShadow = '0 0 8px rgba(63, 185, 80, 0.5)';
+            dom.pitchTimerDot.className = '';
+        }
+        if (dom.pitchTimerText) {
+            dom.pitchTimerText.textContent = `⏱️ Duration: ${durationStr} / 00:30`;
+        }
+    };
+
     dom.btnRecordPitch.addEventListener('click', async () => {
         if (!isPitchRecording) {
             // Start Recording
@@ -1431,7 +1464,9 @@ function initElevatorPitchRecorder() {
 
                 pitchMediaRecorder.onstop = () => {
                     clearInterval(pitchTimerInterval);
-                    if (dom.pitchTimerDisplay) dom.pitchTimerDisplay.style.display = 'none';
+                    const finalSec = pitchSeconds > 0 ? pitchSeconds : 1;
+                    const durationStr = `0:${finalSec < 10 ? '0' : ''}${finalSec}`;
+                    setTimerSavedState(durationStr);
 
                     pitchAudioBlob = new Blob(pitchAudioChunks, { type: 'audio/webm' });
                     state.seekerPitchAudioBlob = pitchAudioBlob;
@@ -1444,14 +1479,13 @@ function initElevatorPitchRecorder() {
                         seekerCandidate.pitch = "Hi recruiters! I just recorded a fresh 30-second elevator pitch about my recent engineering projects and current availability.";
                     }
                     
-                    const durationStr = `0:${pitchSeconds < 10 ? '0' : ''}${pitchSeconds}`;
                     if (dom.seekerPitchStatus) {
                         dom.seekerPitchStatus.textContent = `🟢 Recorded (${durationStr})`;
                         dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
                         dom.seekerPitchStatus.style.color = '#3fb950';
                     }
-                    if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'inline-flex';
-                    if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record';
+                    if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
+                    if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
                     stream.getTracks().forEach(track => track.stop());
                     stopPitchWaveAnimation();
                     renderCandidates();
@@ -1463,15 +1497,11 @@ function initElevatorPitchRecorder() {
                 if (dom.btnRecordPitch) dom.btnRecordPitch.classList.add('recording-pulse');
                 
                 // Start live timer display
-                if (dom.pitchTimerDisplay) {
-                    dom.pitchTimerDisplay.style.display = 'inline-flex';
-                    if (dom.pitchTimerText) dom.pitchTimerText.textContent = '00:00 / 00:30';
-                }
+                setTimerRecordingState(0);
                 
                 pitchTimerInterval = setInterval(() => {
                     pitchSeconds++;
-                    const formatted = `00:${pitchSeconds < 10 ? '0' : ''}${pitchSeconds} / 00:30`;
-                    if (dom.pitchTimerText) dom.pitchTimerText.textContent = formatted;
+                    setTimerRecordingState(pitchSeconds);
 
                     // Automatically stop when reaching 30s limit
                     if (pitchSeconds >= 30) {
@@ -1488,36 +1518,49 @@ function initElevatorPitchRecorder() {
                 console.warn('Microphone permission or error:', err);
                 // Fallback simulation
                 pitchSeconds = 0;
+                isPitchRecording = true;
                 if (dom.recordPitchText) dom.recordPitchText.textContent = 'Recording (sim)...';
-                if (dom.pitchTimerDisplay) {
-                    dom.pitchTimerDisplay.style.display = 'inline-flex';
-                    if (dom.pitchTimerText) dom.pitchTimerText.textContent = '00:00 / 00:30';
-                }
+                if (dom.btnRecordPitch) dom.btnRecordPitch.classList.add('recording-pulse');
+                setTimerRecordingState(0);
                 startPitchWaveAnimation();
                 
                 pitchTimerInterval = setInterval(() => {
                     pitchSeconds++;
-                    if (dom.pitchTimerText) dom.pitchTimerText.textContent = `00:${pitchSeconds < 10 ? '0' : ''}${pitchSeconds} / 00:30`;
+                    setTimerRecordingState(pitchSeconds);
                     if (pitchSeconds >= 5) {
                         clearInterval(pitchTimerInterval);
+                        isPitchRecording = false;
+                        if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');
                         stopPitchWaveAnimation();
-                        if (dom.pitchTimerDisplay) dom.pitchTimerDisplay.style.display = 'none';
+                        setTimerSavedState('0:28');
                         if (dom.seekerPitchStatus) {
                             dom.seekerPitchStatus.textContent = '🟢 Recorded (0:28)';
                             dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
                             dom.seekerPitchStatus.style.color = '#3fb950';
                         }
-                        if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'inline-flex';
-                        if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record';
+                        if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
+                        if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
                     }
                 }, 1000);
             }
         } else {
-            // Stop Recording
+            // Stop Recording manually
             clearInterval(pitchTimerInterval);
-            if (dom.pitchTimerDisplay) dom.pitchTimerDisplay.style.display = 'none';
             if (pitchMediaRecorder && pitchMediaRecorder.state !== 'inactive') {
                 pitchMediaRecorder.stop();
+            } else {
+                // In simulation mode
+                const finalSec = pitchSeconds > 0 ? pitchSeconds : 5;
+                const durationStr = `0:${finalSec < 10 ? '0' : ''}${finalSec}`;
+                setTimerSavedState(durationStr);
+                stopPitchWaveAnimation();
+                if (dom.seekerPitchStatus) {
+                    dom.seekerPitchStatus.textContent = `🟢 Recorded (${durationStr})`;
+                    dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
+                    dom.seekerPitchStatus.style.color = '#3fb950';
+                }
+                if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
+                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
             }
             isPitchRecording = false;
             if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');

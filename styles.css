@@ -309,7 +309,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .workspace-grid {
     display: grid;
-    grid-template-columns: 320px 1fr 340px;
+    grid-template-columns: 350px 1fr 340px;
     height: 100%;
     background-color: var(--bg-base);
 }
