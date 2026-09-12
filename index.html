@@ -546,16 +546,41 @@
                         <!-- Live Recording Timer Display (Persistent & Clean) -->
                         <div id="pitch-timer-display" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-family: monospace; font-size: 0.88rem; font-weight: 700; color: #a1a1aa; margin-bottom: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 20px; transition: all 0.3s ease;">
                             <span id="pitch-timer-dot" style="display: inline-block; width: 8px; height: 8px; background: #71717a; border-radius: 50%;"></span>
-                            <span id="pitch-timer-text">00:00 / 00:30</span>
+                            <span id="pitch-timer-text">Ready to Record (00:00 / 00:30)</span>
                         </div>
 
-                        <!-- Full-width Action Stack: Never squished or cut off -->
-                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
+                        <!-- 1. Initial / Recording State -->
+                        <div id="pitch-record-controls" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
                             <button class="btn btn-secondary" id="btn-record-pitch" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600;">
                                 <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record 30s Pitch</span>
                             </button>
-                            <button class="btn btn-primary" id="btn-play-my-pitch" style="width: 100%; display: none; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600; background: linear-gradient(135deg, #a855f7, #388bfd);">
+                        </div>
+
+                        <!-- 2. Review & Confirmation State (After stopping recording) -->
+                        <div id="pitch-review-controls" style="display: none; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
+                            <div style="display: flex; gap: 8px; width: 100%;">
+                                <button class="btn btn-secondary" id="btn-preview-draft-pitch" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 9px 8px; font-weight: 600;">
+                                    <i class="fa-solid fa-play"></i> <span id="preview-pitch-text">Preview</span>
+                                </button>
+                                <button class="btn btn-secondary" id="btn-rerecord-pitch" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 9px 8px; font-weight: 600;">
+                                    <i class="fa-solid fa-rotate-left"></i> Re-record
+                                </button>
+                            </div>
+                            <button class="btn btn-primary btn-glow" id="btn-confirm-attach-pitch" style="width: 100%; justify-content: center; font-size: 0.86rem; padding: 11px 14px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);">
+                                <i class="fa-solid fa-circle-check"></i> Confirm & Attach to CV
+                            </button>
+                        </div>
+
+                        <!-- 3. Confirmed & Live on CV State -->
+                        <div id="pitch-attached-controls" style="display: none; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
+                            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); padding: 8px 10px; border-radius: var(--radius-md); font-size: 0.78rem; color: #34d399; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> Attached to CV for Recruiters
+                            </div>
+                            <button class="btn btn-primary" id="btn-play-my-pitch" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600; background: linear-gradient(135deg, #a855f7, #388bfd);">
                                 <i class="fa-solid fa-play"></i> Listen to My Pitch
+                            </button>
+                            <button class="btn btn-secondary" id="btn-edit-pitch" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px;">
+                                <i class="fa-solid fa-microphone-lines text-purple"></i> Record New Take
                             </button>
                         </div>
                     </div>

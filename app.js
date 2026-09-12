@@ -1512,8 +1512,30 @@ function switchMobileTab(tabIndex) {
 window.switchMobileTab = switchMobileTab; // Expose globally for HTML onclick
 
 // --- ELEVATOR PITCH RECORDER (CANDIDATE PORTAL) ---
+// --- TOAST NOTIFICATION UTILITY ---
+function showToast(message, type = 'info') {
+    let toast = document.querySelector('.app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'app-toast';
+        document.body.appendChild(toast);
+    }
+    toast.className = `app-toast ${type === 'success' ? 'toast-success' : ''}`;
+    toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-green' : 'fa-circle-info text-cyan'}"></i>
+        <span>${message}</span>
+    `;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000);
+}
+
+// --- ELEVATOR PITCH RECORDER & CV ATTACHMENT FLOW ---
 let pitchMediaRecorder = null;
 let pitchAudioChunks = [];
+let draftPitchAudioBlob = null;
+let draftPitchDurationStr = '0:15';
 let pitchAudioBlob = null;
 let isPitchRecording = false;
 let pitchAnimationId = null;
@@ -1521,6 +1543,7 @@ let pitchTimerInterval = null;
 let pitchSeconds = 0;
 let currentPitchAudioPlayer = null;
 let isPitchPlaying = false;
+let isDraftPreviewPlaying = false;
 
 function stopMyPitchPlayback() {
     if (currentPitchAudioPlayer) {
@@ -1534,27 +1557,34 @@ function stopMyPitchPlayback() {
         window.speechSynthesis.cancel();
     }
     isPitchPlaying = false;
+    isDraftPreviewPlaying = false;
+    
     const playBtn = document.getElementById('btn-play-my-pitch');
     if (playBtn) {
         playBtn.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
         playBtn.classList.remove('btn-listening');
     }
+    const previewBtn = document.getElementById('btn-preview-draft-pitch');
+    if (previewBtn) {
+        previewBtn.innerHTML = '<i class="fa-solid fa-play"></i> Preview';
+        previewBtn.classList.remove('btn-listening');
+    }
     stopPitchWaveAnimation();
 }
 
-function startMyPitchPlayback() {
+function startDraftPreview() {
     stopMyPitchPlayback();
-    isPitchPlaying = true;
-    const playBtn = document.getElementById('btn-play-my-pitch');
-    if (playBtn) {
-        playBtn.innerHTML = '<i class="fa-solid fa-square"></i> Stop Listening';
-        playBtn.classList.add('btn-listening');
+    isDraftPreviewPlaying = true;
+    const previewBtn = document.getElementById('btn-preview-draft-pitch');
+    if (previewBtn) {
+        previewBtn.innerHTML = '<i class="fa-solid fa-square"></i> Stop';
+        previewBtn.classList.add('btn-listening');
     }
     startPitchWaveAnimation();
 
-    if (pitchAudioBlob) {
+    if (draftPitchAudioBlob) {
         try {
-            const url = URL.createObjectURL(pitchAudioBlob);
+            const url = URL.createObjectURL(draftPitchAudioBlob);
             currentPitchAudioPlayer = new Audio(url);
             currentPitchAudioPlayer.onended = () => {
                 stopMyPitchPlayback();
@@ -1572,7 +1602,55 @@ function startMyPitchPlayback() {
     } else {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Zena Nasereddin, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
+            const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Malik Al-Raji, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
+            u.rate = 1.05;
+            u.onend = () => {
+                stopMyPitchPlayback();
+            };
+            u.onerror = () => {
+                stopMyPitchPlayback();
+            };
+            window.speechSynthesis.speak(u);
+        } else {
+            setTimeout(() => {
+                stopMyPitchPlayback();
+            }, 3000);
+        }
+    }
+}
+
+function startMyPitchPlayback() {
+    stopMyPitchPlayback();
+    isPitchPlaying = true;
+    const playBtn = document.getElementById('btn-play-my-pitch');
+    if (playBtn) {
+        playBtn.innerHTML = '<i class="fa-solid fa-square"></i> Stop Listening';
+        playBtn.classList.add('btn-listening');
+    }
+    startPitchWaveAnimation();
+
+    const audioToPlay = pitchAudioBlob || draftPitchAudioBlob;
+    if (audioToPlay) {
+        try {
+            const url = URL.createObjectURL(audioToPlay);
+            currentPitchAudioPlayer = new Audio(url);
+            currentPitchAudioPlayer.onended = () => {
+                stopMyPitchPlayback();
+            };
+            currentPitchAudioPlayer.onerror = () => {
+                stopMyPitchPlayback();
+            };
+            currentPitchAudioPlayer.play().catch(e => {
+                console.warn('Playback error:', e);
+                stopMyPitchPlayback();
+            });
+        } catch (e) {
+            stopMyPitchPlayback();
+        }
+    } else {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Malik Al-Raji, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
             u.rate = 1.05;
             u.onend = () => {
                 stopMyPitchPlayback();
@@ -1591,7 +1669,15 @@ function startMyPitchPlayback() {
 
 function initElevatorPitchRecorder() {
     const recordBtn = document.getElementById('btn-record-pitch');
-    const playBtn = document.getElementById('btn-play-my-pitch');
+    const recordControls = document.getElementById('pitch-record-controls');
+    const reviewControls = document.getElementById('pitch-review-controls');
+    const attachedControls = document.getElementById('pitch-attached-controls');
+    const previewBtn = document.getElementById('btn-preview-draft-pitch');
+    const rerecordBtn = document.getElementById('btn-rerecord-pitch');
+    const confirmBtn = document.getElementById('btn-confirm-attach-pitch');
+    const playAttachedBtn = document.getElementById('btn-play-my-pitch');
+    const editPitchBtn = document.getElementById('btn-edit-pitch');
+
     if (!recordBtn) return;
 
     const setTimerRecordingState = (seconds) => {
@@ -1610,7 +1696,26 @@ function initElevatorPitchRecorder() {
         }
         if (timerText) {
             const secStr = seconds < 10 ? '0' + seconds : '' + seconds;
-            timerText.textContent = `🔴 00:${secStr} / 00:30`;
+            timerText.textContent = `🔴 Recording: 00:${secStr} / 00:30`;
+        }
+    };
+
+    const setTimerReviewState = (durationStr) => {
+        const timerDisplay = document.getElementById('pitch-timer-display');
+        const timerDot = document.getElementById('pitch-timer-dot');
+        const timerText = document.getElementById('pitch-timer-text');
+        if (timerDisplay) {
+            timerDisplay.style.background = 'rgba(234, 179, 8, 0.12)';
+            timerDisplay.style.borderColor = 'rgba(234, 179, 8, 0.4)';
+            timerDisplay.style.color = '#facc15';
+        }
+        if (timerDot) {
+            timerDot.style.background = '#facc15';
+            timerDot.style.boxShadow = '0 0 8px rgba(250, 204, 21, 0.5)';
+            timerDot.className = '';
+        }
+        if (timerText) {
+            timerText.textContent = `⏱️ Recorded: ${durationStr} / 00:30 (Unsaved Draft)`;
         }
     };
 
@@ -1619,22 +1724,56 @@ function initElevatorPitchRecorder() {
         const timerDot = document.getElementById('pitch-timer-dot');
         const timerText = document.getElementById('pitch-timer-text');
         if (timerDisplay) {
-            timerDisplay.style.background = 'rgba(46, 160, 67, 0.12)';
-            timerDisplay.style.borderColor = 'rgba(46, 160, 67, 0.4)';
-            timerDisplay.style.color = '#3fb950';
+            timerDisplay.style.background = 'rgba(16, 185, 129, 0.12)';
+            timerDisplay.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            timerDisplay.style.color = '#34d399';
         }
         if (timerDot) {
-            timerDot.style.background = '#3fb950';
-            timerDot.style.boxShadow = '0 0 8px rgba(63, 185, 80, 0.5)';
+            timerDot.style.background = '#10b981';
+            timerDot.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
             timerDot.className = '';
         }
         if (timerText) {
-            timerText.textContent = `⏱️ Duration: ${durationStr} / 00:30`;
+            timerText.textContent = `🟢 Active on CV: ${durationStr} / 00:30`;
         }
     };
 
+    const setTimerIdleState = () => {
+        const timerDisplay = document.getElementById('pitch-timer-display');
+        const timerDot = document.getElementById('pitch-timer-dot');
+        const timerText = document.getElementById('pitch-timer-text');
+        if (timerDisplay) {
+            timerDisplay.style.background = 'rgba(255, 255, 255, 0.04)';
+            timerDisplay.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            timerDisplay.style.color = '#a1a1aa';
+        }
+        if (timerDot) {
+            timerDot.style.background = '#71717a';
+            timerDot.style.boxShadow = 'none';
+            timerDot.className = '';
+        }
+        if (timerText) {
+            timerText.textContent = `Ready to Record (00:00 / 00:30)`;
+        }
+    };
+
+    const enterReviewStep = (durationStr) => {
+        draftPitchDurationStr = durationStr;
+        setTimerReviewState(durationStr);
+        if (recordControls) recordControls.style.display = 'none';
+        if (attachedControls) attachedControls.style.display = 'none';
+        if (reviewControls) reviewControls.style.display = 'flex';
+        
+        const statusBadge = document.getElementById('seeker-pitch-status');
+        if (statusBadge) {
+            statusBadge.textContent = `⚠️ Unsaved Take (${durationStr})`;
+            statusBadge.style.background = 'rgba(234, 179, 8, 0.2)';
+            statusBadge.style.color = '#facc15';
+        }
+    };
+
+    // RECORD BUTTON CLICK
     recordBtn.addEventListener('click', async () => {
-        // Stop any active audio playback first
         stopMyPitchPlayback();
 
         if (!isPitchRecording) {
@@ -1656,36 +1795,12 @@ function initElevatorPitchRecorder() {
                     clearInterval(pitchTimerInterval);
                     const finalSec = pitchSeconds > 0 ? pitchSeconds : 1;
                     const durationStr = `0:${finalSec < 10 ? '0' : ''}${finalSec}`;
-                    setTimerSavedState(durationStr);
 
-                    pitchAudioBlob = new Blob(pitchAudioChunks, { type: 'audio/webm' });
-                    state.seekerPitchAudioBlob = pitchAudioBlob;
-                    
-                    // Attach directly to candidate in state (e.g. c1)
-                    const seekerCandidate = state.candidates.find(c => c.id === 'c1');
-                    if (seekerCandidate) {
-                        seekerCandidate.pitchAudioBlob = pitchAudioBlob;
-                        seekerCandidate.hasCustomPitch = true;
-                        seekerCandidate.pitch = "Hi recruiters! I just recorded a fresh 30-second elevator pitch about my recent engineering projects and current availability.";
-                    }
-                    
-                    const statusBadge = document.getElementById('seeker-pitch-status');
-                    if (statusBadge) {
-                        statusBadge.textContent = `🟢 Recorded (${durationStr})`;
-                        statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
-                        statusBadge.style.color = '#3fb950';
-                    }
-                    const playBtnElem = document.getElementById('btn-play-my-pitch');
-                    if (playBtnElem) {
-                        playBtnElem.style.display = 'flex';
-                        playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
-                        playBtnElem.classList.remove('btn-listening');
-                    }
-                    const recordText = document.getElementById('record-pitch-text');
-                    if (recordText) recordText.textContent = 'Re-record Pitch';
+                    draftPitchAudioBlob = new Blob(pitchAudioChunks, { type: 'audio/webm' });
                     stream.getTracks().forEach(track => track.stop());
                     stopPitchWaveAnimation();
-                    renderCandidates();
+                    
+                    enterReviewStep(durationStr);
                 };
 
                 pitchMediaRecorder.start();
@@ -1701,7 +1816,6 @@ function initElevatorPitchRecorder() {
                     pitchSeconds++;
                     setTimerRecordingState(pitchSeconds);
 
-                    // Automatically stop when reaching 30s limit
                     if (pitchSeconds >= 30) {
                         if (pitchMediaRecorder && pitchMediaRecorder.state !== 'inactive') {
                             pitchMediaRecorder.stop();
@@ -1732,21 +1846,8 @@ function initElevatorPitchRecorder() {
                         isPitchRecording = false;
                         recordBtn.classList.remove('recording-pulse');
                         stopPitchWaveAnimation();
-                        setTimerSavedState('0:30');
-                        const statusBadge = document.getElementById('seeker-pitch-status');
-                        if (statusBadge) {
-                            statusBadge.textContent = '🟢 Recorded (0:30)';
-                            statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
-                            statusBadge.style.color = '#3fb950';
-                        }
-                        const playBtnElem = document.getElementById('btn-play-my-pitch');
-                        if (playBtnElem) {
-                            playBtnElem.style.display = 'flex';
-                            playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
-                            playBtnElem.classList.remove('btn-listening');
-                        }
-                        const rText = document.getElementById('record-pitch-text');
-                        if (rText) rText.textContent = 'Re-record Pitch';
+                        draftPitchAudioBlob = null;
+                        enterReviewStep('0:30');
                     }
                 }, 1000);
             }
@@ -1759,35 +1860,104 @@ function initElevatorPitchRecorder() {
                 // In simulation mode
                 const finalSec = pitchSeconds > 0 ? pitchSeconds : 1;
                 const durationStr = `0:${finalSec < 10 ? '0' : ''}${finalSec}`;
-                setTimerSavedState(durationStr);
                 stopPitchWaveAnimation();
-                const statusBadge = document.getElementById('seeker-pitch-status');
-                if (statusBadge) {
-                    statusBadge.textContent = `🟢 Recorded (${durationStr})`;
-                    statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
-                    statusBadge.style.color = '#3fb950';
-                }
-                const playBtnElem = document.getElementById('btn-play-my-pitch');
-                if (playBtnElem) {
-                    playBtnElem.style.display = 'flex';
-                    playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
-                    playBtnElem.classList.remove('btn-listening');
-                }
-                const recordText = document.getElementById('record-pitch-text');
-                if (recordText) recordText.textContent = 'Re-record Pitch';
+                draftPitchAudioBlob = null;
+                enterReviewStep(durationStr);
             }
             isPitchRecording = false;
             recordBtn.classList.remove('recording-pulse');
         }
     });
 
-    if (playBtn) {
-        playBtn.addEventListener('click', () => {
+    // PREVIEW DRAFT BUTTON
+    if (previewBtn) {
+        previewBtn.addEventListener('click', () => {
+            if (isDraftPreviewPlaying) {
+                stopMyPitchPlayback();
+            } else {
+                startDraftPreview();
+            }
+        });
+    }
+
+    // RE-RECORD BUTTON
+    if (rerecordBtn) {
+        rerecordBtn.addEventListener('click', () => {
+            stopMyPitchPlayback();
+            draftPitchAudioBlob = null;
+            setTimerIdleState();
+            if (reviewControls) reviewControls.style.display = 'none';
+            if (attachedControls) attachedControls.style.display = 'none';
+            if (recordControls) recordControls.style.display = 'flex';
+            const recordText = document.getElementById('record-pitch-text');
+            if (recordText) recordText.textContent = 'Record 30s Pitch';
+            const statusBadge = document.getElementById('seeker-pitch-status');
+            if (statusBadge) {
+                statusBadge.textContent = 'Not Recorded';
+                statusBadge.style.background = 'rgba(168, 85, 247, 0.2)';
+                statusBadge.style.color = '#c084fc';
+            }
+        });
+    }
+
+    // CONFIRM & ATTACH TO CV BUTTON
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            stopMyPitchPlayback();
+            pitchAudioBlob = draftPitchAudioBlob;
+            state.seekerPitchAudioBlob = pitchAudioBlob;
+
+            // Officially attach to candidate in state (c1 / active profile)
+            const seekerCandidate = state.candidates.find(c => c.id === 'c1');
+            if (seekerCandidate) {
+                seekerCandidate.pitchAudioBlob = pitchAudioBlob;
+                seekerCandidate.hasCustomPitch = true;
+                seekerCandidate.pitchDuration = draftPitchDurationStr;
+                seekerCandidate.pitch = "Hi recruiters! I just recorded an authentic 30-second elevator pitch introducing my technical background, projects, and current availability.";
+            }
+
+            // Update UI to Attached State
+            setTimerSavedState(draftPitchDurationStr);
+            if (reviewControls) reviewControls.style.display = 'none';
+            if (recordControls) recordControls.style.display = 'none';
+            if (attachedControls) attachedControls.style.display = 'flex';
+
+            const statusBadge = document.getElementById('seeker-pitch-status');
+            if (statusBadge) {
+                statusBadge.textContent = `🟢 Attached to CV (${draftPitchDurationStr})`;
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+                statusBadge.style.color = '#34d399';
+            }
+
+            // Sync with recruiter candidate pool
+            renderCandidates();
+
+            // Display Toast notification
+            showToast('🎉 Elevator pitch attached to your CV! Recruiters can now listen to your voice intro.', 'success');
+        });
+    }
+
+    // LISTEN TO ATTACHED PITCH BUTTON
+    if (playAttachedBtn) {
+        playAttachedBtn.addEventListener('click', () => {
             if (isPitchPlaying) {
                 stopMyPitchPlayback();
             } else {
                 startMyPitchPlayback();
             }
+        });
+    }
+
+    // RECORD NEW TAKE BUTTON (FROM ATTACHED STATE)
+    if (editPitchBtn) {
+        editPitchBtn.addEventListener('click', () => {
+            stopMyPitchPlayback();
+            setTimerIdleState();
+            if (reviewControls) reviewControls.style.display = 'none';
+            if (attachedControls) attachedControls.style.display = 'none';
+            if (recordControls) recordControls.style.display = 'flex';
+            const recordText = document.getElementById('record-pitch-text');
+            if (recordText) recordText.textContent = 'Record 30s Pitch';
         });
     }
 }
