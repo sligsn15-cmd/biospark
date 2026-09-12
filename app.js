@@ -1413,45 +1413,129 @@ let isPitchRecording = false;
 let pitchAnimationId = null;
 let pitchTimerInterval = null;
 let pitchSeconds = 0;
+let currentPitchAudioPlayer = null;
+let isPitchPlaying = false;
+
+function stopMyPitchPlayback() {
+    if (currentPitchAudioPlayer) {
+        try {
+            currentPitchAudioPlayer.pause();
+            currentPitchAudioPlayer.currentTime = 0;
+        } catch (e) {}
+        currentPitchAudioPlayer = null;
+    }
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    isPitchPlaying = false;
+    const playBtn = document.getElementById('btn-play-my-pitch');
+    if (playBtn) {
+        playBtn.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
+        playBtn.classList.remove('btn-listening');
+    }
+    stopPitchWaveAnimation();
+}
+
+function startMyPitchPlayback() {
+    stopMyPitchPlayback();
+    isPitchPlaying = true;
+    const playBtn = document.getElementById('btn-play-my-pitch');
+    if (playBtn) {
+        playBtn.innerHTML = '<i class="fa-solid fa-square"></i> Stop Listening';
+        playBtn.classList.add('btn-listening');
+    }
+    startPitchWaveAnimation();
+
+    if (pitchAudioBlob) {
+        try {
+            const url = URL.createObjectURL(pitchAudioBlob);
+            currentPitchAudioPlayer = new Audio(url);
+            currentPitchAudioPlayer.onended = () => {
+                stopMyPitchPlayback();
+            };
+            currentPitchAudioPlayer.onerror = () => {
+                stopMyPitchPlayback();
+            };
+            currentPitchAudioPlayer.play().catch(e => {
+                console.warn('Playback error:', e);
+                stopMyPitchPlayback();
+            });
+        } catch (e) {
+            stopMyPitchPlayback();
+        }
+    } else {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Zena Nasereddin, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
+            u.rate = 1.05;
+            u.onend = () => {
+                stopMyPitchPlayback();
+            };
+            u.onerror = () => {
+                stopMyPitchPlayback();
+            };
+            window.speechSynthesis.speak(u);
+        } else {
+            setTimeout(() => {
+                stopMyPitchPlayback();
+            }, 3000);
+        }
+    }
+}
 
 function initElevatorPitchRecorder() {
-    if (!dom.btnRecordPitch) return;
+    const recordBtn = document.getElementById('btn-record-pitch');
+    const playBtn = document.getElementById('btn-play-my-pitch');
+    if (!recordBtn) return;
 
     const setTimerRecordingState = (seconds) => {
-        if (dom.pitchTimerDisplay) {
-            dom.pitchTimerDisplay.style.background = 'rgba(239, 68, 68, 0.15)';
-            dom.pitchTimerDisplay.style.borderColor = 'rgba(239, 68, 68, 0.45)';
-            dom.pitchTimerDisplay.style.color = '#f87171';
+        const timerDisplay = document.getElementById('pitch-timer-display');
+        const timerDot = document.getElementById('pitch-timer-dot');
+        const timerText = document.getElementById('pitch-timer-text');
+        if (timerDisplay) {
+            timerDisplay.style.background = 'rgba(239, 68, 68, 0.15)';
+            timerDisplay.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+            timerDisplay.style.color = '#f87171';
         }
-        if (dom.pitchTimerDot) {
-            dom.pitchTimerDot.style.background = '#ef4444';
-            dom.pitchTimerDot.style.boxShadow = '0 0 8px #ef4444';
-            dom.pitchTimerDot.className = 'pulse-red';
+        if (timerDot) {
+            timerDot.style.background = '#ef4444';
+            timerDot.style.boxShadow = '0 0 8px #ef4444';
+            timerDot.className = 'pulse-red';
         }
-        if (dom.pitchTimerText) {
-            dom.pitchTimerText.textContent = `🔴 00:${seconds < 10 ? '0' : ''}${seconds} / 00:30`;
+        if (timerText) {
+            const secStr = seconds < 10 ? '0' + seconds : '' + seconds;
+            timerText.textContent = `🔴 00:${secStr} / 00:30`;
         }
     };
 
     const setTimerSavedState = (durationStr) => {
-        if (dom.pitchTimerDisplay) {
-            dom.pitchTimerDisplay.style.background = 'rgba(46, 160, 67, 0.12)';
-            dom.pitchTimerDisplay.style.borderColor = 'rgba(46, 160, 67, 0.4)';
-            dom.pitchTimerDisplay.style.color = '#3fb950';
+        const timerDisplay = document.getElementById('pitch-timer-display');
+        const timerDot = document.getElementById('pitch-timer-dot');
+        const timerText = document.getElementById('pitch-timer-text');
+        if (timerDisplay) {
+            timerDisplay.style.background = 'rgba(46, 160, 67, 0.12)';
+            timerDisplay.style.borderColor = 'rgba(46, 160, 67, 0.4)';
+            timerDisplay.style.color = '#3fb950';
         }
-        if (dom.pitchTimerDot) {
-            dom.pitchTimerDot.style.background = '#3fb950';
-            dom.pitchTimerDot.style.boxShadow = '0 0 8px rgba(63, 185, 80, 0.5)';
-            dom.pitchTimerDot.className = '';
+        if (timerDot) {
+            timerDot.style.background = '#3fb950';
+            timerDot.style.boxShadow = '0 0 8px rgba(63, 185, 80, 0.5)';
+            timerDot.className = '';
         }
-        if (dom.pitchTimerText) {
-            dom.pitchTimerText.textContent = `⏱️ Duration: ${durationStr} / 00:30`;
+        if (timerText) {
+            timerText.textContent = `⏱️ Duration: ${durationStr} / 00:30`;
         }
     };
 
-    dom.btnRecordPitch.addEventListener('click', async () => {
+    recordBtn.addEventListener('click', async () => {
+        // Stop any active audio playback first
+        stopMyPitchPlayback();
+
         if (!isPitchRecording) {
-            // Start Recording
+            // START RECORDING
+            pitchSeconds = 0;
+            clearInterval(pitchTimerInterval);
+
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 pitchMediaRecorder = new MediaRecorder(stream);
@@ -1479,13 +1563,20 @@ function initElevatorPitchRecorder() {
                         seekerCandidate.pitch = "Hi recruiters! I just recorded a fresh 30-second elevator pitch about my recent engineering projects and current availability.";
                     }
                     
-                    if (dom.seekerPitchStatus) {
-                        dom.seekerPitchStatus.textContent = `🟢 Recorded (${durationStr})`;
-                        dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
-                        dom.seekerPitchStatus.style.color = '#3fb950';
+                    const statusBadge = document.getElementById('seeker-pitch-status');
+                    if (statusBadge) {
+                        statusBadge.textContent = `🟢 Recorded (${durationStr})`;
+                        statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
+                        statusBadge.style.color = '#3fb950';
                     }
-                    if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
-                    if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
+                    const playBtnElem = document.getElementById('btn-play-my-pitch');
+                    if (playBtnElem) {
+                        playBtnElem.style.display = 'flex';
+                        playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
+                        playBtnElem.classList.remove('btn-listening');
+                    }
+                    const recordText = document.getElementById('record-pitch-text');
+                    if (recordText) recordText.textContent = 'Re-record Pitch';
                     stream.getTracks().forEach(track => track.stop());
                     stopPitchWaveAnimation();
                     renderCandidates();
@@ -1493,10 +1584,11 @@ function initElevatorPitchRecorder() {
 
                 pitchMediaRecorder.start();
                 isPitchRecording = true;
-                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Stop Recording';
-                if (dom.btnRecordPitch) dom.btnRecordPitch.classList.add('recording-pulse');
+                const recordText = document.getElementById('record-pitch-text');
+                if (recordText) recordText.textContent = 'Stop Recording';
+                recordBtn.classList.add('recording-pulse');
                 
-                // Start live timer display
+                // Start live timer display immediately
                 setTimerRecordingState(0);
                 
                 pitchTimerInterval = setInterval(() => {
@@ -1509,76 +1601,86 @@ function initElevatorPitchRecorder() {
                             pitchMediaRecorder.stop();
                         }
                         isPitchRecording = false;
-                        if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');
+                        recordBtn.classList.remove('recording-pulse');
                     }
                 }, 1000);
 
                 startPitchWaveAnimation();
             } catch (err) {
                 console.warn('Microphone permission or error:', err);
-                // Fallback simulation
+                // Fallback simulation with live timer
                 pitchSeconds = 0;
                 isPitchRecording = true;
-                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Recording (sim)...';
-                if (dom.btnRecordPitch) dom.btnRecordPitch.classList.add('recording-pulse');
+                const recordText = document.getElementById('record-pitch-text');
+                if (recordText) recordText.textContent = 'Stop Recording';
+                recordBtn.classList.add('recording-pulse');
                 setTimerRecordingState(0);
                 startPitchWaveAnimation();
                 
                 pitchTimerInterval = setInterval(() => {
                     pitchSeconds++;
                     setTimerRecordingState(pitchSeconds);
-                    if (pitchSeconds >= 5) {
+
+                    if (pitchSeconds >= 30) {
                         clearInterval(pitchTimerInterval);
                         isPitchRecording = false;
-                        if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');
+                        recordBtn.classList.remove('recording-pulse');
                         stopPitchWaveAnimation();
-                        setTimerSavedState('0:28');
-                        if (dom.seekerPitchStatus) {
-                            dom.seekerPitchStatus.textContent = '🟢 Recorded (0:28)';
-                            dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
-                            dom.seekerPitchStatus.style.color = '#3fb950';
+                        setTimerSavedState('0:30');
+                        const statusBadge = document.getElementById('seeker-pitch-status');
+                        if (statusBadge) {
+                            statusBadge.textContent = '🟢 Recorded (0:30)';
+                            statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
+                            statusBadge.style.color = '#3fb950';
                         }
-                        if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
-                        if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
+                        const playBtnElem = document.getElementById('btn-play-my-pitch');
+                        if (playBtnElem) {
+                            playBtnElem.style.display = 'flex';
+                            playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
+                            playBtnElem.classList.remove('btn-listening');
+                        }
+                        const rText = document.getElementById('record-pitch-text');
+                        if (rText) rText.textContent = 'Re-record Pitch';
                     }
                 }, 1000);
             }
         } else {
-            // Stop Recording manually
+            // STOP RECORDING MANUALLY
             clearInterval(pitchTimerInterval);
             if (pitchMediaRecorder && pitchMediaRecorder.state !== 'inactive') {
                 pitchMediaRecorder.stop();
             } else {
                 // In simulation mode
-                const finalSec = pitchSeconds > 0 ? pitchSeconds : 5;
+                const finalSec = pitchSeconds > 0 ? pitchSeconds : 1;
                 const durationStr = `0:${finalSec < 10 ? '0' : ''}${finalSec}`;
                 setTimerSavedState(durationStr);
                 stopPitchWaveAnimation();
-                if (dom.seekerPitchStatus) {
-                    dom.seekerPitchStatus.textContent = `🟢 Recorded (${durationStr})`;
-                    dom.seekerPitchStatus.style.background = 'rgba(46, 160, 67, 0.2)';
-                    dom.seekerPitchStatus.style.color = '#3fb950';
+                const statusBadge = document.getElementById('seeker-pitch-status');
+                if (statusBadge) {
+                    statusBadge.textContent = `🟢 Recorded (${durationStr})`;
+                    statusBadge.style.background = 'rgba(46, 160, 67, 0.2)';
+                    statusBadge.style.color = '#3fb950';
                 }
-                if (dom.btnPlayMyPitch) dom.btnPlayMyPitch.style.display = 'flex';
-                if (dom.recordPitchText) dom.recordPitchText.textContent = 'Re-record Pitch';
+                const playBtnElem = document.getElementById('btn-play-my-pitch');
+                if (playBtnElem) {
+                    playBtnElem.style.display = 'flex';
+                    playBtnElem.innerHTML = '<i class="fa-solid fa-play"></i> Listen to My Pitch';
+                    playBtnElem.classList.remove('btn-listening');
+                }
+                const recordText = document.getElementById('record-pitch-text');
+                if (recordText) recordText.textContent = 'Re-record Pitch';
             }
             isPitchRecording = false;
-            if (dom.btnRecordPitch) dom.btnRecordPitch.classList.remove('recording-pulse');
+            recordBtn.classList.remove('recording-pulse');
         }
     });
 
-    if (dom.btnPlayMyPitch) {
-        dom.btnPlayMyPitch.addEventListener('click', () => {
-            if (pitchAudioBlob) {
-                const audio = new Audio(URL.createObjectURL(pitchAudioBlob));
-                audio.play();
+    if (playBtn) {
+        playBtn.addEventListener('click', () => {
+            if (isPitchPlaying) {
+                stopMyPitchPlayback();
             } else {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const u = new SpeechSynthesisUtterance("Hi recruiters! I'm Zena Nasereddin, a Senior Full-Stack Engineer with 6 years experience building distributed cloud systems and scalable APIs.");
-                    u.rate = 1.05;
-                    window.speechSynthesis.speak(u);
-                }
+                startMyPitchPlayback();
             }
         });
     }
