@@ -535,15 +535,20 @@
                 </div>
 
                 <!-- Interactive Resume Upload Form -->
-                <div class="profile-upload-section">
-                    <h3>Update Profile PDF</h3>
-                    <p class="status-description" style="color: var(--accent-cyan); font-size: 0.72rem; margin-bottom: 8px;">
-                        ⚠️ <b>Privacy Warning:</b> Do not include sensitive details (home address, national ID, or bank details) on your CV. Only list a contact email/phone.
+                <div class="profile-upload-section" style="padding: 0 20px 50px 20px; margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h3 style="margin-bottom: 0;"><i class="fa-solid fa-file-arrow-up text-cyan"></i> Update Profile PDF</h3>
+                    </div>
+                    <p class="status-description" style="color: var(--accent-cyan); font-size: 0.72rem; margin-bottom: 10px;">
+                        ⚠️ <b>Privacy Warning:</b> Do not include home address or ID on your CV. Only list contact email/phone.
                     </p>
-                    <div class="upload-zone" id="seeker-upload-zone">
+                    <div class="upload-zone" id="seeker-upload-zone" style="margin: 0; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 12px; border-radius: var(--radius-md);">
                         <input type="file" id="seeker-file-input" accept=".pdf" style="display: none;">
-                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                        <p class="upload-title">Click to upload new CV</p>
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon" style="font-size: 1.4rem; margin-bottom: 0;"></i>
+                        <div style="text-align: left;">
+                            <p class="upload-title" style="margin-bottom: 2px; font-weight: 600;">Click to upload new CV</p>
+                            <p class="upload-subtitle" style="margin-bottom: 0; font-size: 0.7rem;">PDF format • Parsed locally</p>
+                        </div>
                     </div>
                 </div>
             </section>

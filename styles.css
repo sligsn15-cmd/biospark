@@ -107,7 +107,7 @@ h1, h2, h3, h4, h5, h6 {
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(56, 139, 253, 0.2) transparent;
-    padding-bottom: 50px;
+    padding-bottom: 80px !important;
 }
 
 .scrollable::-webkit-scrollbar {
