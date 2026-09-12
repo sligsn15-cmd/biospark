@@ -599,46 +599,127 @@ function updateStarredCount() {
     if (dom.starredCount) dom.starredCount.textContent = count;
 }
 
-// --- CANDIDATE AUDIO PITCH PLAYBACK ---
+// --- CANDIDATE AUDIO INTRO PLAYBACK & STOP CONTROLS ---
 let currentPitchAudio = null;
+let currentPitchCandidateId = null;
+
+function stopCandidatePitchPlayback() {
+    if (currentPitchAudio) {
+        currentPitchAudio.pause();
+        currentPitchAudio.currentTime = 0;
+        currentPitchAudio = null;
+    }
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    state.isSpeaking = false;
+    currentPitchCandidateId = null;
+
+    // Reset CV preview button
+    const cvBtn = document.getElementById('btn-cv-play-intro');
+    if (cvBtn) {
+        const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
+        const duration = (candidate && candidate.pitchDuration) ? candidate.pitchDuration : '0:28';
+        cvBtn.innerHTML = `<i class="fa-solid fa-play"></i> Listen to Voice Intro (${duration})`;
+        cvBtn.style.background = 'var(--gradient-glow)';
+        cvBtn.style.borderColor = 'transparent';
+    }
+
+    // Reset right side voice exchange button
+    if (dom.btnListenPitch) {
+        dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-play"></i> Play Intro`;
+    }
+    if (dom.avatarAudioIndicator) {
+        dom.avatarAudioIndicator.classList.remove('speaking');
+    }
+
+    // Reset all candidate card pitch buttons
+    document.querySelectorAll('.btn-card-pitch').forEach(btn => {
+        btn.classList.remove('playing');
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Intro`;
+    });
+}
+
 function playCandidatePitch(id, event) {
     if (event) event.stopPropagation();
     const candidate = state.candidates.find(c => c.id === id);
     if (!candidate) return;
 
-    if (currentPitchAudio) {
-        currentPitchAudio.pause();
-        currentPitchAudio = null;
-    }
-
-    // Visual feedback
-    if (event && event.currentTarget) {
-        const btn = event.currentTarget;
-        btn.classList.add('playing');
-        setTimeout(() => btn.classList.remove('playing'), 4000);
-    }
-
-    addAiMessage(`🎙️ Playing 30s voice introduction for **${candidate.name}**...`);
-    
-    // If candidate has real recorded audio blob, play it directly
-    if (candidate.pitchAudioBlob) {
-        currentPitchAudio = new Audio(URL.createObjectURL(candidate.pitchAudioBlob));
-        currentPitchAudio.play();
+    // If ALREADY PLAYING this candidate's intro, STOP IT!
+    if (currentPitchCandidateId === id) {
+        stopCandidatePitchPlayback();
+        addAiMessage(`⏹️ Stopped voice introduction for **${candidate.name}**.`);
         return;
     }
 
-    // Play spoken pitch simulation
+    // If another intro was playing, stop it first
+    stopCandidatePitchPlayback();
+
+    currentPitchCandidateId = id;
+
+    // Update CV preview button if currently viewing this candidate
+    const cvBtn = document.getElementById('btn-cv-play-intro');
+    if (cvBtn && state.selectedCandidateId === id) {
+        cvBtn.innerHTML = `<i class="fa-solid fa-square"></i> Stop Listening`;
+        cvBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        cvBtn.style.borderColor = '#ef4444';
+    }
+
+    // Update card button in candidate list
+    const cardBtns = document.querySelectorAll(`.btn-card-pitch[onclick*="'${id}'"]`);
+    cardBtns.forEach(btn => {
+        btn.classList.add('playing');
+        btn.innerHTML = `<i class="fa-solid fa-square"></i> Stop`;
+    });
+
+    // Update right panel voice widget
+    if (dom.btnListenPitch && state.selectedCandidateId === id) {
+        dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-square"></i> Stop Intro`;
+    }
+    if (dom.avatarAudioIndicator) {
+        dom.avatarAudioIndicator.classList.add('speaking');
+    }
+
+    addAiMessage(`🎙️ Playing 30s voice introduction for **${candidate.name}**... (Click "Stop Listening" to stop anytime)`);
+    
+    // If candidate has real recorded audio blob, play it directly
+    if (candidate.pitchAudioBlob) {
+        const url = URL.createObjectURL(candidate.pitchAudioBlob);
+        currentPitchAudio = new Audio(url);
+        currentPitchAudio.onended = () => {
+            stopCandidatePitchPlayback();
+        };
+        currentPitchAudio.onerror = () => {
+            stopCandidatePitchPlayback();
+        };
+        currentPitchAudio.play().catch(err => {
+            console.warn("Audio playback error:", err);
+            stopCandidatePitchPlayback();
+        });
+        return;
+    }
+
+    // Spoken introduction fallback simulation
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(candidate.pitch || `Hi, I am ${candidate.name}, ${candidate.title}. I am excited about new opportunities!`);
         utterance.rate = 1.05;
         utterance.pitch = candidate.name.includes('Sarah') || candidate.name.includes('Zena') ? 1.2 : 0.95;
+        utterance.onend = () => {
+            stopCandidatePitchPlayback();
+        };
+        utterance.onerror = () => {
+            stopCandidatePitchPlayback();
+        };
         window.speechSynthesis.speak(utterance);
     }
 }
 
 // --- SELECT CANDIDATE ---
 function selectCandidate(id) {
+    if (currentPitchCandidateId && currentPitchCandidateId !== id) {
+        stopCandidatePitchPlayback();
+    }
     state.selectedCandidateId = id;
     renderCandidates();
 
@@ -663,6 +744,7 @@ function selectCandidate(id) {
     `).join('');
 
     const hasPitch = !!(candidate.pitch || candidate.pitchAudioBlob);
+    const isThisPitchPlaying = currentPitchCandidateId === candidate.id;
     const pitchBannerHtml = hasPitch ? `
         <div class="cv-pitch-card" style="background: linear-gradient(135deg, rgba(22, 28, 45, 0.9), rgba(13, 17, 28, 0.95)); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -680,8 +762,8 @@ function selectCandidate(id) {
                 "${candidate.pitch || 'Candidate recorded a custom voice introduction introducing their background and core strengths.'}"
             </p>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-glow" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 8px 16px; font-size: 0.8rem; background: var(--gradient-glow);">
-                    <i class="fa-solid fa-play"></i> Listen to Voice Intro (0:28)
+                <button class="btn btn-primary btn-glow" id="btn-cv-play-intro" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 8px 16px; font-size: 0.8rem; background: ${isThisPitchPlaying ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'var(--gradient-glow)'}; border-color: ${isThisPitchPlaying ? '#ef4444' : 'transparent'};">
+                    <i class="fa-solid fa-${isThisPitchPlaying ? 'square' : 'play'}"></i> ${isThisPitchPlaying ? 'Stop Listening' : `Listen to Voice Intro (${candidate.pitchDuration || '0:28'})`}
                 </button>
                 <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-headphones"></i> Listen to evaluate tone & communication</span>
             </div>
@@ -999,13 +1081,7 @@ function initVoiceSynthesis() {
         const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
         if (!candidate) return;
 
-        if (state.isSpeaking) {
-            stopSpeaking();
-            return;
-        }
-
-        // Simulate playing pre-recorded candidate pitch
-        speakText(candidate.pitch);
+        playCandidatePitch(candidate.id);
     });
 
     dom.btnRecordInquiry.addEventListener('click', async () => {
@@ -1106,7 +1182,7 @@ function speakText(text) {
     state.speechSynthesisUtterance.onend = () => {
         state.isSpeaking = false;
         dom.avatarAudioIndicator.classList.remove('speaking');
-        dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-play"></i> Play Pitch`;
+        dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-play"></i> Play Intro`;
     };
 
     window.speechSynthesis.speak(state.speechSynthesisUtterance);
@@ -1116,7 +1192,7 @@ function stopSpeaking() {
     window.speechSynthesis.cancel();
     state.isSpeaking = false;
     dom.avatarAudioIndicator.classList.remove('speaking');
-    dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-play"></i> Play Pitch`;
+    dom.btnListenPitch.innerHTML = `<i class="fa-solid fa-play"></i> Play Intro`;
 }
 
 // --- JOB-SEEKER DASHBOARD LOGIC ---
