@@ -568,8 +568,8 @@ function renderCandidates(customList = null) {
             <div class="candidate-desc">${c.title}</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
                 <div class="candidate-desc" style="font-size: 0.7rem; opacity: 0.7;"><i class="fa-solid fa-location-dot"></i> ${c.location.split('(')[0]}</div>
-                <button class="btn-card-pitch" onclick="playCandidatePitch('${c.id}', event)" title="Listen to 30s elevator pitch">
-                    <i class="fa-solid fa-play"></i> Pitch
+                <button class="btn-card-pitch" onclick="playCandidatePitch('${c.id}', event)" title="Listen to 30s voice introduction">
+                    <i class="fa-solid fa-play"></i> Intro
                 </button>
             </div>
         `;
@@ -618,7 +618,7 @@ function playCandidatePitch(id, event) {
         setTimeout(() => btn.classList.remove('playing'), 4000);
     }
 
-    addAiMessage(`🎙️ Playing 30s elevator pitch for **${candidate.name}**...`);
+    addAiMessage(`🎙️ Playing 30s voice introduction for **${candidate.name}**...`);
     
     // If candidate has real recorded audio blob, play it directly
     if (candidate.pitchAudioBlob) {
@@ -670,18 +670,18 @@ function selectCandidate(id) {
                     <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
                         <i class="fa-solid fa-microphone-lines"></i>
                     </span>
-                    <strong style="font-size: 0.92rem; color: #fff;">Attached 30s Elevator Voice Pitch</strong>
+                    <strong style="font-size: 0.92rem; color: #fff;">Attached 30s Voice Introduction</strong>
                 </div>
                 <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.72rem; padding: 3px 8px; border-radius: 10px;">
                     <i class="fa-solid fa-circle-check"></i> Verified Audio
                 </span>
             </div>
             <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4; font-style: italic;">
-                "${candidate.pitch || 'Candidate recorded a custom voice elevator pitch introducing their background and core strengths.'}"
+                "${candidate.pitch || 'Candidate recorded a custom voice introduction introducing their background and core strengths.'}"
             </p>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button class="btn btn-primary btn-glow" onclick="playCandidatePitch('${candidate.id}', event)" style="padding: 8px 16px; font-size: 0.8rem; background: var(--gradient-glow);">
-                    <i class="fa-solid fa-play"></i> Listen to Elevator Pitch (0:28)
+                    <i class="fa-solid fa-play"></i> Listen to Voice Intro (0:28)
                 </button>
                 <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-headphones"></i> Listen to evaluate tone & communication</span>
             </div>
@@ -714,7 +714,7 @@ function selectCandidate(id) {
     // Reset Chat panel message
     dom.chatHistory.innerHTML = `
         <div class="chat-bubble ai-bubble">
-            <p>I have parsed **${candidate.name}'s** resume.${hasPitch ? ' 🎙️ **Spoken Elevator Pitch Attached** (Click "Listen" above to hear them).' : ''} What specific questions do you have about their qualifications, history, or availability?</p>
+            <p>I have parsed **${candidate.name}'s** resume.${hasPitch ? ' 🎙️ **Voice Introduction Attached** (Click "Listen to Voice Intro" above to hear them).' : ''} What specific questions do you have about their qualifications, history, or availability?</p>
         </div>
     `;
 
@@ -1913,7 +1913,7 @@ function initElevatorPitchRecorder() {
                 seekerCandidate.pitchAudioBlob = pitchAudioBlob;
                 seekerCandidate.hasCustomPitch = true;
                 seekerCandidate.pitchDuration = draftPitchDurationStr;
-                seekerCandidate.pitch = "Hi recruiters! I just recorded an authentic 30-second elevator pitch introducing my technical background, projects, and current availability.";
+                seekerCandidate.pitch = "Hi recruiters! I just recorded an authentic 30-second voice introduction introducing my technical background, projects, and current availability.";
             }
 
             // Update UI to Attached State
@@ -1933,7 +1933,7 @@ function initElevatorPitchRecorder() {
             renderCandidates();
 
             // Display Toast notification
-            showToast('🎉 Elevator pitch attached to your CV! Recruiters can now listen to your voice intro.', 'success');
+            showToast('🎉 Voice introduction attached to your CV! Recruiters can now listen to you introduce yourself.', 'success');
         });
     }
 
@@ -1957,7 +1957,7 @@ function initElevatorPitchRecorder() {
             if (attachedControls) attachedControls.style.display = 'none';
             if (recordControls) recordControls.style.display = 'flex';
             const recordText = document.getElementById('record-pitch-text');
-            if (recordText) recordText.textContent = 'Record 30s Pitch';
+            if (recordText) recordText.textContent = 'Record 30s Intro';
         });
     }
 }

@@ -89,7 +89,7 @@
                             <i class="fa-solid fa-user-tie"></i>
                         </div>
                         <h3>I am a Job Seeker</h3>
-                        <p>Create your interactive talkable CV, record a 30s elevator pitch, optimize for ATS, and get discovered by active recruiters.</p>
+                        <p>Create your interactive talkable CV, introduce yourself with a 30s voice intro, optimize for ATS, and get discovered by active recruiters.</p>
                         <button class="btn btn-secondary btn-role-action">
                             <i class="fa-solid fa-wand-magic-sparkles text-cyan"></i> Join as Job Seeker <i class="fa-solid fa-arrow-right" style="margin-left: auto;"></i>
                         </button>
@@ -164,7 +164,7 @@
                             <i class="fa-solid fa-key"></i>
                         </div>
                         <h3>$5 Pay-As-You-Go Unlocks</h3>
-                        <p>Zero high-cost subscriptions. Browse full resumes and listen to voice pitch replies freely. Pay only $5 when you're 100% ready to unlock direct contact details and schedule.</p>
+                        <p>Zero high-cost subscriptions. Browse full resumes and listen to 30s voice introductions freely. Pay only $5 when you're 100% ready to unlock direct contact details and schedule.</p>
                     </div>
                 </div>
             </section>
@@ -453,7 +453,7 @@
                         <h3><i class="fa-solid fa-microphone-lines"></i> Voice Note Exchange</h3>
                         <span class="badge badge-active"><span class="pulse-green"></span> Connectable</span>
                     </div>
-                    <p class="widget-description">Listen to candidate's recorded pitch or record a voice inquiry to check their tone & personality.</p>
+                    <p class="widget-description">Listen to candidate's recorded voice intro or record a question to evaluate communication.</p>
 
                     <!-- Interactive Speaker Visualizer -->
                     <div class="visualizer-container">
@@ -472,7 +472,7 @@
                     </div>
 
                     <div class="voice-controls">
-                        <button class="btn btn-secondary" id="btn-listen-pitch"><i class="fa-solid fa-play"></i> Play Pitch</button>
+                        <button class="btn btn-secondary" id="btn-listen-pitch"><i class="fa-solid fa-play"></i> Play Intro</button>
                         <button class="btn btn-primary" id="btn-record-inquiry"><i class="fa-solid fa-microphone"></i> Record Inquiry</button>
                     </div>
                 </div>
@@ -532,13 +532,13 @@
                     </p>
                 </div>
 
-                <!-- 30-Second Elevator Voice Pitch Card -->
+                <!-- 30-Second Voice Intro Card -->
                 <div class="status-retention-card" style="border-color: rgba(168, 85, 247, 0.4);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <h3 style="margin-bottom: 0;"><i class="fa-solid fa-microphone-lines text-purple"></i> 30s Elevator Pitch</h3>
+                        <h3 style="margin-bottom: 0;"><i class="fa-solid fa-microphone-lines text-purple"></i> Introduce Yourself</h3>
                         <span class="badge" id="seeker-pitch-status" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px;">Not Recorded</span>
                     </div>
-                    <p class="status-description">Record a quick 30s audio intro. Recruiters listen to this before reviewing your CV!</p>
+                    <p class="status-description">Record a quick 30s audio intro to introduce yourself. Recruiters listen to this before reviewing your CV!</p>
                     
                     <div class="elevator-pitch-box" style="margin-top: 12px; background: rgba(13, 17, 28, 0.75); padding: 14px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.25); text-align: center; box-sizing: border-box; width: 100%;">
                         <canvas id="seeker-pitch-canvas" width="280" height="38" style="width: 100%; height: 38px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid rgba(255,255,255,0.06);"></canvas>
@@ -552,7 +552,7 @@
                         <!-- 1. Initial / Recording State -->
                         <div id="pitch-record-controls" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
                             <button class="btn btn-secondary" id="btn-record-pitch" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600;">
-                                <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record 30s Pitch</span>
+                                <i class="fa-solid fa-microphone text-purple"></i> <span id="record-pitch-text">Record 30s Intro</span>
                             </button>
                         </div>
 
@@ -577,7 +577,7 @@
                                 <i class="fa-solid fa-circle-check"></i> Attached to CV for Recruiters
                             </div>
                             <button class="btn btn-primary" id="btn-play-my-pitch" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px 14px; font-weight: 600; background: linear-gradient(135deg, #a855f7, #388bfd);">
-                                <i class="fa-solid fa-play"></i> Listen to My Pitch
+                                <i class="fa-solid fa-play"></i> Listen to My Intro
                             </button>
                             <button class="btn btn-secondary" id="btn-edit-pitch" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px;">
                                 <i class="fa-solid fa-microphone-lines text-purple"></i> Record New Take
@@ -779,7 +779,7 @@
             </div>
             <div class="modal-body">
                 <p class="status-description" style="margin-bottom: 14px;">
-                    Anyone with this link can view your verified active status, listen to your 30s voice pitch, and browse your experience. Your direct phone/email are kept private until verified.
+                    Anyone with this link can view your verified active status, listen to your 30s voice introduction, and browse your experience. Your direct phone/email are kept private until verified.
                 </p>
 
                 <!-- Link Copy Box -->
@@ -812,14 +812,14 @@
                             </span>
                         </div>
 
-                        <!-- Mini Voice Pitch Player -->
+                        <!-- Mini Voice Introduction Player -->
                         <div style="background: rgba(22, 28, 45, 0.8); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-microphone-lines text-purple"></i>
-                                <span style="font-size: 0.8rem; font-weight: 600;">30-Second Elevator Pitch</span>
+                                <span style="font-size: 0.8rem; font-weight: 600;">30s Voice Introduction</span>
                             </div>
-                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="alert('Playing candidate voice pitch preview...')">
-                                <i class="fa-solid fa-play"></i> Play (0:28)
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="alert('Playing candidate voice introduction preview...')">
+                                <i class="fa-solid fa-play"></i> Play Intro (0:28)
                             </button>
                         </div>
 
